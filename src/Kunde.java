@@ -1,8 +1,11 @@
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class Kunde extends Person {
 	private static int nummer = 0;
 	private String passwort;
 	private final int kundennummer;
+	private static Pattern anforderungen = Pattern.compile("[a-zA-Z0-9]{4,}");
 	
 	public Kunde(String vorname, String name, String email, int alter, double strafpreis, String ort, String strasse,
 			String hausnummer, int plz, String passwort) {
@@ -31,8 +34,13 @@ public class Kunde extends Person {
 		return false;
 	}
 
-	private boolean anforderungenErfuellt(String passwort) { // TODO
-		return false;
+	private boolean anforderungenErfuellt(String passwort) {
+		Matcher m = Kunde.anforderungen.matcher(passwort);
+		return m.matches();
+	}
+	
+	public void setAnforderungenErfuellt(String s) { // TODO
+		Kunde.anforderungen = Pattern.compile(s);
 	}
 
 	public int getKundennummer() {
