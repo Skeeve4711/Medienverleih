@@ -13,7 +13,7 @@ public class Kunde extends Person {
 		if(anforderungenErfuellt(passwort)) {
 			this.passwort = passwort;
 		} else {
-			this.passwort = "th!nk f!rst, c0de sec0nd";
+			this.passwort = "1234";
 		}
 		this.kundennummer = generiereKundenummer();
 	}
