@@ -12,6 +12,7 @@ public class Datum {
 			this.monat = monat;
 			this.jahr = jahr;
 		} else{
+
 			tag = 0;
 		}
 	}
