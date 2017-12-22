@@ -1,3 +1,5 @@
+import java.util.regex.Pattern;
+import java.util.regex.Matcher;
 
 public class Person {
 	
@@ -10,13 +12,19 @@ public class Person {
 	protected String strasse;
 	protected String hausnummer;
 	protected int plz;
+	private static final Pattern email_regex = Pattern.compile("(?:[a-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\\.[a-z0-9!#$%&'*+/=?^_`{|}~-]+)*|\"(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21\\x23-\\x5b\\x5d-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])*\")@(?:(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\\.)+[a-z0-9](?:[a-z0-9-]*[a-z0-9])?|\\[(?:(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\\.){3}(?:25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?|[a-z0-9-]*[a-z0-9]:(?:[\\x01-\\x08\\x0b\\x0c\\x0e-\\x1f\\x21-\\x5a\\x53-\\x7f]|\\\\[\\x01-\\x09\\x0b\\x0c\\x0e-\\x7f])+)\\])"); 
 	
 	public Person(String vorname, String name, String email, int alter, double strafpreis, String ort, String strasse,
 			String hausnummer, int plz) {
 		super();
 		this.vorname = vorname;
 		this.name = name;
-		this.email = email;
+                Matcher m = Person.email_regex.matcher(email);
+                if(m.matches()) {
+                       this.email = email;
+                } else {
+                       this.email = "";
+                }
 		this.alter = alter;
 		this.strafpreis = strafpreis;
 		this.ort = ort;
