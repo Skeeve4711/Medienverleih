@@ -1,3 +1,4 @@
+package Intern;
 
 public class Datum {
 	int tag;
