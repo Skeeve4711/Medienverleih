@@ -63,6 +63,11 @@ public class GUIMedienVerwalten implements WindowListener{
 		JButton btnHinzufuegen = new JButton("Hinzufügen");
 		btnHinzufuegen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
+				try {
+					con.close();
+				} catch (SQLException e) {
+					e.printStackTrace();
+				}
 				frame.dispose();
 				GUIMedienHinzufuegen hinzufuegen = new GUIMedienHinzufuegen();
 				hinzufuegen.getFrame().setVisible(true);
@@ -75,6 +80,11 @@ public class GUIMedienVerwalten implements WindowListener{
 		JButton btnAusschliessen = new JButton("Ausschließen");
 		btnAusschliessen.addActionListener(new ActionListener() { // TODO Rückgabewert
 			public void actionPerformed(ActionEvent e) {
+				try {
+					con.close();
+				} catch (SQLException ex) {
+					ex.printStackTrace();
+				}
 				frame.dispose();
 				GUIBestaetigenMedienVerwalten  bestaetigung = new GUIBestaetigenMedienVerwalten(); // TODO Rückgabewert auswerten
 				bestaetigung.getFrame().setVisible(true);
@@ -216,6 +226,13 @@ public class GUIMedienVerwalten implements WindowListener{
 	public void windowClosing(WindowEvent e) {
 		frame.dispose();
 		GUIMain oberflaeche = new GUIMain();
+		try {
+			if(con != null) {
+				con.close();
+			}
+		} catch (SQLException ex) {
+			ex.printStackTrace();
+		}
 		oberflaeche.getFrame().setVisible(true);
 	}
 }

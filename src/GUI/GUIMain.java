@@ -235,7 +235,9 @@ public class GUIMain implements WindowListener{
 	public void windowClosing(WindowEvent e) {
 		frame.dispose();
 		try {
-			this.con.close();
+			if(con != null) {
+				this.con.close();
+			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
