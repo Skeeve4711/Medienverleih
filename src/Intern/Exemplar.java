@@ -9,7 +9,6 @@ public class Exemplar extends Medium {
 	private Datum einstellungsdatum;
 	private String titel;
 	private String artikelnummer;
-	private double kaufpreis;
 	private int leihdauer;
 	private double leihpreis;
 	private Datum leihdatum;
@@ -19,7 +18,7 @@ public class Exemplar extends Medium {
 	
 	public Exemplar(String rueckgabedatum, int dauer, Datum einstellungsdatum,
 			String titel, String artikelnummer, double kaufpreis, int leihdauer, 
-			double leihpreis, Datum leihdatum, Kategorie kategorie, double originalpreis, int altersfreigabe) {
+			double leihpreis, Datum leihdatum, Kategorie kategorie, int altersfreigabe) {
 		this.historie = new ArrayList<>();
 		this.rueckgabedatum = rueckgabedatum;
 		this.dauer = dauer;
@@ -32,7 +31,6 @@ public class Exemplar extends Medium {
 		this.leihdatum = leihdatum;
 		this.status = Status.auf_lager;
 		this.kategorie = kategorie;
-		this.originalpreis = originalpreis;
 		this.altersfreigabe = altersfreigabe;
 		this.grund = "";
 	}

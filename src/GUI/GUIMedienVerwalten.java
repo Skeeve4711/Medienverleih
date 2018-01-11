@@ -95,18 +95,6 @@ public class GUIMedienVerwalten implements WindowListener{
 		});
 		btnFertigStellen.setBounds(24, 297, 226, 35);
 		frame.getContentPane().add(btnFertigStellen);
-		
-		// Kategorie hinzufuegen
-		JButton btnTypHinzufuegen = new JButton("Kategorie Hinzufügen");
-		btnTypHinzufuegen.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) { // TODO hinzufuegen in Datenbank
-				frame.dispose();
-				GUIKategorieHinzufuegen kategorie = new GUIKategorieHinzufuegen();
-				kategorie.getFrame().setVisible(true);
-			}
-		});
-		btnTypHinzufuegen.setBounds(24, 203, 226, 35);
-		frame.getContentPane().add(btnTypHinzufuegen);
 	}
 	
 	public JFrame getFrame() {

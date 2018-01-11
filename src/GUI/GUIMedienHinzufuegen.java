@@ -27,9 +27,11 @@ public class GUIMedienHinzufuegen implements WindowListener{
 	private JTextField textFieldTitel;
 	private JTextField textFieldArtikelnummer;
 	private JTextField textFieldKaufpreis;
-	private JTextField textFieldOriginalpreis;
+	private JTextField textFieldGenre;
 	private JTextField textFieldAltersfreigabe;
 	private JTextField textFieldLeihpreis;
+	private JTextField textFieldSchauspieler;
+	private JTextField textFieldRegisseur;
 
 	/**
 	 * Launch the application.
@@ -113,14 +115,14 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		lblPostleitzahl.setBounds(405, 31, 91, 15);
 		frame.getContentPane().add(lblPostleitzahl);
 		
-		JLabel lblOrt = new JLabel("Originalpreis");
+		JLabel lblOrt = new JLabel("Genre");
 		lblOrt.setBounds(405, 78, 129, 15);
 		frame.getContentPane().add(lblOrt);
 		
-		textFieldOriginalpreis = new JTextField();
-		textFieldOriginalpreis.setColumns(10);
-		textFieldOriginalpreis.setBounds(552, 73, 200, 25);
-		frame.getContentPane().add(textFieldOriginalpreis);
+		textFieldGenre = new JTextField();
+		textFieldGenre.setColumns(10);
+		textFieldGenre.setBounds(552, 73, 200, 25);
+		frame.getContentPane().add(textFieldGenre);
 		
 		textFieldAltersfreigabe = new JTextField();
 		textFieldAltersfreigabe.setColumns(10);
@@ -140,10 +142,52 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		textFieldLeihpreis.setBounds(187, 215, 200, 25);
 		frame.getContentPane().add(textFieldLeihpreis);
 		
+		textFieldSchauspieler = new JTextField();
+		textFieldSchauspieler.setColumns(10);
+		textFieldSchauspieler.setBounds(552, 173, 200, 25);
+		frame.getContentPane().add(textFieldSchauspieler);
+		
+		textFieldRegisseur = new JTextField();
+		textFieldRegisseur.setColumns(10);
+		textFieldRegisseur.setBounds(552, 215, 200, 25);
+		frame.getContentPane().add(textFieldRegisseur);
+		
+		JLabel lblSchauspieler = new JLabel("Schauspieler");
+		lblSchauspieler.setBounds(405, 175, 121, 15);
+		frame.getContentPane().add(lblSchauspieler);
+		
+		JLabel lblRegisseur = new JLabel("Regisseur");
+		lblRegisseur.setBounds(405, 217, 121, 15);
+		frame.getContentPane().add(lblRegisseur);
+		
 		JComboBox comboBoxKategorie = new JComboBox();
+		comboBoxKategorie.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				String auswahl = comboBoxKategorie.getSelectedItem().toString();
+				if(auswahl == "Film") {
+					lblSchauspieler.setText("Schauspieler");
+					lblRegisseur.setText("Regisseur");
+					textFieldRegisseur.setVisible(true);
+					lblRegisseur.setVisible(true);
+				} else if (auswahl == "Buch") {
+					lblSchauspieler.setText("Autor");
+					textFieldRegisseur.setVisible(false);
+					lblRegisseur.setVisible(false);
+				} else {
+					lblSchauspieler.setText("Entwickler");
+					lblRegisseur.setText("Publisher");
+					textFieldRegisseur.setVisible(true);
+					lblRegisseur.setVisible(true);
+				}
+			}
+		});
 		comboBoxKategorie.setBounds(552, 26, 200, 25);
 		frame.getContentPane().add(comboBoxKategorie);
 		frame.addWindowListener(this);
+		comboBoxKategorie.addItem("Film");
+		comboBoxKategorie.addItem("Buch");
+		comboBoxKategorie.addItem("Videospiel");
+
 	}
 	
 	public JFrame getFrame() {

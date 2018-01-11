@@ -8,12 +8,21 @@ import java.awt.Dimension;
 
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
 import java.awt.event.ActionEvent;
 
-public class GUIMain {
+import java.sql.*;
+import javax.swing.JTextArea;
+import javax.swing.table.TableColumn;
+import javax.swing.JTable; 
+
+public class GUIMain implements WindowListener{
 
 	private JFrame frame;
-
+	private JTable table;
+	private Connection con;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -43,9 +52,10 @@ public class GUIMain {
 	private void initialize() {
 		frame = new JFrame("Medienverleih");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
-	    frame.setBounds((screenSize.width-560)/2, (screenSize.height-400)/2, 560, 400);
+	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-500)/2, 1300, 500);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
+		frame.addWindowListener(this);
 		
 		// Kunden verwalten Fenster öffnen
 		JButton btnKundenVerwalten = new JButton("Kunden verwalten");
@@ -75,7 +85,7 @@ public class GUIMain {
 		btnVerkaufen.setBounds(24, 320, 226, 35);
 		frame.getContentPane().add(btnVerkaufen);
 		
-		JButton btnNewButton_1 = new JButton("???");
+		JButton btnNewButton_1 = new JButton("Kundenansicht");
 		btnNewButton_1.setBounds(24, 77, 226, 35);
 		frame.getContentPane().add(btnNewButton_1);
 		
@@ -91,11 +101,124 @@ public class GUIMain {
 		frame.getContentPane().add(btnMedienVerwalten);
 		
 		JScrollPane scrollPaneMedien = new JScrollPane();
-		scrollPaneMedien.setBounds(298, 77, 226, 278);
+		scrollPaneMedien.setBounds(298, 77, 982, 277);
 		frame.getContentPane().add(scrollPaneMedien);
+		
+		JTextArea txtrMedien = new JTextArea();
+		txtrMedien.setEditable(false);
+		txtrMedien.setText("Medien");
+		scrollPaneMedien.setColumnHeaderView(txtrMedien);
+		
+		this.con = SimpleQuery.connect();
+		String[] columnNames = {"Art. Nr.",
+				"Kaufpreis", "Altersfreigabe", "Status",
+				"Schauspieler","Regie","Filmstudio",
+				"Erscheinungsdatum","Titel","Genre",
+				"Leihpreis"};
+		try {
+			PreparedStatement pst = con.prepareStatement("select * from Filme");
+		    ResultSet rs = pst.executeQuery();
+		    Object data[][] = new Object[100][12]; 
+		    int indexA = 0;
+		    while(rs.next()) {
+		    	for(int i=1;i<12;i++) {
+		    		data[indexA][i-1] = rs.getString(i);
+		    	}
+		    	indexA++;
+		    }
+			table = new JTable(data, columnNames);
+			
+			TableColumn column = null;
+			for (int i = 0; i < 11; i++) {
+			    column = table.getColumnModel().getColumn(i);
+			    column.setPreferredWidth(120);
+			}
+			
+			scrollPaneMedien.setViewportView(table);
+		} catch(SQLException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public JFrame getFrame() {
 		return this.frame;
 	}
+	
+	@Override
+	public void windowActivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosed(WindowEvent e) {
+	}
+
+	@Override
+	public void windowDeactivated(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowDeiconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowIconified(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowOpened(WindowEvent e) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void windowClosing(WindowEvent e) {
+		frame.dispose();
+		try {
+			this.con.close();
+		} catch (SQLException e1) {
+			e1.printStackTrace();
+		}
+	}
 }
+
+class SimpleQuery { 
+  
+ public static Connection connect(){ 
+
+     // Diese Eintraege werden zum 
+     // Verbindungsaufbau benoetigt. 
+     final String hostname = "localhost"; 
+     final String port = "3306"; 
+     final String dbname = "Medienverleih"; 
+     final String user = "pascal"; 
+     final String password = ""; 
+	
+     Connection con = null; 
+     PreparedStatement pst = null;
+     
+     try { 
+	    System.out.println("* Verbindung aufbauen"); 
+	    String url = "jdbc:mysql://"+hostname+":"+port+"/"+dbname; 
+	    con = DriverManager.getConnection(url, user, password); 
+	   
+	    
+     } 
+     catch (SQLException sqle) { 
+         System.out.println("SQLException: " + sqle.getMessage()); 
+         System.out.println("SQLState: " + sqle.getSQLState()); 
+         System.out.println("VendorError: " + sqle.getErrorCode()); 
+         sqle.printStackTrace(); 
+     } 
+     return con;
+		
+  } // ende: public static void main() 
+ 
+} // ende: public class SimpleQuery 

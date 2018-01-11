@@ -1,6 +1,6 @@
 package Intern;
 
 public abstract class Medium {
-	protected double originalpreis;
+	protected double kaufpreis;
 	protected int altersfreigabe;
 }
