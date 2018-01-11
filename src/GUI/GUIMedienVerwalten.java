@@ -17,7 +17,14 @@ import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
+import javax.swing.JLabel;
 
 public class GUIMedienVerwalten implements WindowListener{
 
@@ -182,6 +189,48 @@ public class GUIMedienVerwalten implements WindowListener{
 		});
 		btnFertigStellen.setBounds(24, 297, 226, 35);
 		frame.getContentPane().add(btnFertigStellen);
+		
+		// Feld, um in allen Spalten zu suchen
+		JTextField textFieldSuche = new JTextField();
+		TableRowSorter<TableModel> rowSorter = new TableRowSorter<>(table.getModel());
+		table.setRowSorter(rowSorter);
+        textFieldSuche.getDocument().addDocumentListener(new DocumentListener(){
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                String text = textFieldSuche.getText();
+
+                if (text.trim().length() == 0) {
+                    rowSorter.setRowFilter(null);
+                } else {
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                String text = textFieldSuche.getText();
+
+                if (text.trim().length() == 0) {
+                    rowSorter.setRowFilter(null);
+                } else {
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                throw new UnsupportedOperationException("Not supported yet."); 
+            }
+
+        });
+		textFieldSuche.setBounds(678, 35, 200, 25);
+		frame.getContentPane().add(textFieldSuche);
+		textFieldSuche.setColumns(10);
+		
+		JLabel lblSuche = new JLabel("Suche");
+		lblSuche.setBounds(607, 40, 53, 15);
+		frame.getContentPane().add(lblSuche);
 	}
 	
 	public JFrame getFrame() {

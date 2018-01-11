@@ -13,11 +13,17 @@ import java.awt.event.WindowListener;
 import java.awt.event.ActionEvent;
 
 import java.sql.*;
-import javax.swing.JTextArea;
 import javax.swing.table.TableColumn;
+import javax.swing.table.TableModel;
+import javax.swing.table.TableRowSorter;
 
 import javax.swing.JTable;
-import javax.swing.JComboBox; 
+import javax.swing.JComboBox;
+import javax.swing.JTextField;
+import javax.swing.RowFilter;
+import javax.swing.event.DocumentEvent;
+import javax.swing.event.DocumentListener;
+import javax.swing.JLabel; 
 
 public class GUIMain implements WindowListener{
 
@@ -37,6 +43,7 @@ public class GUIMain implements WindowListener{
 			"Kaufpreis", "Altersfreigabe", "Status",
 			"Entwickler", "Publisher", "Erscheinungsdatum",
 			"Titel", "Genre", "Leihpreis"};
+	private JTextField textFieldSuche;
 	
 	/**
 	 * Launch the application.
@@ -120,11 +127,6 @@ public class GUIMain implements WindowListener{
 		scrollPaneMedien.setBounds(298, 77, 982, 277);
 		frame.getContentPane().add(scrollPaneMedien);
 		
-		JTextArea txtrMedien = new JTextArea();
-		txtrMedien.setEditable(false);
-		txtrMedien.setText("Medien");
-		scrollPaneMedien.setColumnHeaderView(txtrMedien);
-		
 		JComboBox<String> comboBoxKategorie = new JComboBox<>();
 		comboBoxKategorie.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -190,6 +192,48 @@ public class GUIMain implements WindowListener{
 		comboBoxKategorie.addItem("Videospiele");
 		comboBoxKategorie.setBounds(565, 35, 200, 25);
 		frame.getContentPane().add(comboBoxKategorie);
+		
+		// Feld, um in allen Spalten zu suchen
+		textFieldSuche = new JTextField();
+		TableRowSorter<TableModel> rowSorter = new TableRowSorter<>(table.getModel());
+		table.setRowSorter(rowSorter);
+        textFieldSuche.getDocument().addDocumentListener(new DocumentListener(){
+
+            @Override
+            public void insertUpdate(DocumentEvent e) {
+                String text = textFieldSuche.getText();
+
+                if (text.trim().length() == 0) {
+                    rowSorter.setRowFilter(null);
+                } else {
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+
+            @Override
+            public void removeUpdate(DocumentEvent e) {
+                String text = textFieldSuche.getText();
+
+                if (text.trim().length() == 0) {
+                    rowSorter.setRowFilter(null);
+                } else {
+                    rowSorter.setRowFilter(RowFilter.regexFilter("(?i)" + text));
+                }
+            }
+
+            @Override
+            public void changedUpdate(DocumentEvent e) {
+                throw new UnsupportedOperationException("Not supported yet."); 
+            }
+
+        });
+		textFieldSuche.setBounds(895, 35, 200, 25);
+		frame.getContentPane().add(textFieldSuche);
+		textFieldSuche.setColumns(10);
+		
+		JLabel lblSuche = new JLabel("Suche");
+		lblSuche.setBounds(840, 40, 43, 15);
+		frame.getContentPane().add(lblSuche);
 
 	}
 	
