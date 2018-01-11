@@ -2,7 +2,7 @@ package Intern;
 import java.util.ArrayList;
 
 public class Exemplar extends Medium {
-	enum Status { verliehen, verkauft, entsorgt, auf_lager};
+	public enum Status { verliehen, verkauft, entsorgt, auf_lager};
 	private ArrayList<Historie> historie;
 	private String rueckgabedatum;
 	private int dauer;

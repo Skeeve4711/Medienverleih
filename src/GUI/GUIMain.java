@@ -15,13 +15,28 @@ import java.awt.event.ActionEvent;
 import java.sql.*;
 import javax.swing.JTextArea;
 import javax.swing.table.TableColumn;
-import javax.swing.JTable; 
+
+import javax.swing.JTable;
+import javax.swing.JComboBox; 
 
 public class GUIMain implements WindowListener{
 
 	private JFrame frame;
 	private JTable table;
 	private Connection con;
+	static String[] columnNamesFilme = {"Art. Nr.",
+			"Kaufpreis", "Altersfreigabe", "Status",
+			"Schauspieler", "Regie", "Filmstudio",
+			"Erscheinungsdatum", "Titel", "Genre",
+			"Leihpreis"};
+	static String[] columnNamesBuecher = {"Art. Nr.",
+			"Kaufpreis", "Altersfreigabe", "Status",
+			"Autor", "Erscheinungsdatum", "Titel",
+			"Genre", "Leihpreis"};
+	static String[] columnNamesVideospiele = {"Art. Nr.",
+			"Kaufpreis", "Altersfreigabe", "Status",
+			"Entwickler", "Publisher", "Erscheinungsdatum",
+			"Titel", "Genre", "Leihpreis"};
 	
 	/**
 	 * Launch the application.
@@ -56,6 +71,7 @@ public class GUIMain implements WindowListener{
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.addWindowListener(this);
+		this.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
 		
 		// Kunden verwalten Fenster öffnen
 		JButton btnKundenVerwalten = new JButton("Kunden verwalten");
@@ -109,35 +125,72 @@ public class GUIMain implements WindowListener{
 		txtrMedien.setText("Medien");
 		scrollPaneMedien.setColumnHeaderView(txtrMedien);
 		
-		this.con = SimpleQuery.connect();
-		String[] columnNames = {"Art. Nr.",
-				"Kaufpreis", "Altersfreigabe", "Status",
-				"Schauspieler","Regie","Filmstudio",
-				"Erscheinungsdatum","Titel","Genre",
-				"Leihpreis"};
-		try {
-			PreparedStatement pst = con.prepareStatement("select * from Filme");
-		    ResultSet rs = pst.executeQuery();
-		    Object data[][] = new Object[100][12]; 
-		    int indexA = 0;
-		    while(rs.next()) {
-		    	for(int i=1;i<12;i++) {
-		    		data[indexA][i-1] = rs.getString(i);
-		    	}
-		    	indexA++;
-		    }
-			table = new JTable(data, columnNames);
-			
-			TableColumn column = null;
-			for (int i = 0; i < 11; i++) {
-			    column = table.getColumnModel().getColumn(i);
-			    column.setPreferredWidth(120);
+		JComboBox<String> comboBoxKategorie = new JComboBox<>();
+		comboBoxKategorie.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String kategorie = comboBoxKategorie.getSelectedItem().toString();
+				try {
+					PreparedStatement anz = con.prepareStatement("select count(*) from " + kategorie);
+					ResultSet anzahl = anz.executeQuery();
+					anzahl.next();
+					int zeilenanzahl = anzahl.getInt(1);
+					PreparedStatement pst = con.prepareStatement("select * from " + kategorie);
+				    ResultSet rs = pst.executeQuery();
+				    int spaltenanzahl;
+				    if(kategorie.equals("Buecher")) {
+				    	spaltenanzahl = columnNamesBuecher.length; 
+				    } else if (kategorie.equals("Filme")){
+				    	spaltenanzahl = columnNamesFilme.length; 
+				    } else {
+				    	spaltenanzahl = columnNamesVideospiele.length;
+				    }
+				    String data[][] = new String[zeilenanzahl][spaltenanzahl];
+				    int indexA = 0;
+				    while(rs.next()) {
+				    	for(int i=1;i<spaltenanzahl+1;i++) {
+				    		if(i == 4) {
+				    			int tmp = rs.getInt(i);
+				    			String stat = "";
+				    			switch(tmp) {
+				    				case 0: stat = "Verliehen"; break;
+				    				case 1: stat = "Verkauft";  break;
+				    				case 2: stat = "Entsorgt";  break;
+				    				case 3: stat = "Auf Lager"; break;
+				    				default:
+				    			}
+				    			data[indexA][i-1] = stat;
+				    		} else {
+				    			data[indexA][i-1] = rs.getString(i);
+				    		}
+				    	}
+				    	indexA++;
+				    }
+				    if(kategorie.equals("Filme")) {
+				    	table = new JTable(data, columnNamesFilme);
+				    } else 	if(kategorie.equals("Buecher")) {
+				    	table = new JTable(data, columnNamesBuecher);
+				    } else {
+				    	table = new JTable(data, columnNamesVideospiele);
+				    }
+					
+					TableColumn column = null;
+					for (int i = 0; i < spaltenanzahl-1; i++) {
+					    column = table.getColumnModel().getColumn(i);
+					    column.setPreferredWidth(120);
+					}
+					
+					scrollPaneMedien.setViewportView(table);
+				} catch(SQLException ex) {
+					ex.printStackTrace();
+				}
 			}
-			
-			scrollPaneMedien.setViewportView(table);
-		} catch(SQLException e) {
-			e.printStackTrace();
-		}
+		});
+		comboBoxKategorie.addItem("Filme");
+		comboBoxKategorie.addItem("Buecher");
+		comboBoxKategorie.addItem("Videospiele");
+		comboBoxKategorie.setBounds(565, 35, 200, 25);
+		frame.getContentPane().add(comboBoxKategorie);
+
 	}
 	
 	public JFrame getFrame() {
@@ -189,36 +242,4 @@ public class GUIMain implements WindowListener{
 	}
 }
 
-class SimpleQuery { 
-  
- public static Connection connect(){ 
 
-     // Diese Eintraege werden zum 
-     // Verbindungsaufbau benoetigt. 
-     final String hostname = "localhost"; 
-     final String port = "3306"; 
-     final String dbname = "Medienverleih"; 
-     final String user = "pascal"; 
-     final String password = ""; 
-	
-     Connection con = null; 
-     PreparedStatement pst = null;
-     
-     try { 
-	    System.out.println("* Verbindung aufbauen"); 
-	    String url = "jdbc:mysql://"+hostname+":"+port+"/"+dbname; 
-	    con = DriverManager.getConnection(url, user, password); 
-	   
-	    
-     } 
-     catch (SQLException sqle) { 
-         System.out.println("SQLException: " + sqle.getMessage()); 
-         System.out.println("SQLState: " + sqle.getSQLState()); 
-         System.out.println("VendorError: " + sqle.getErrorCode()); 
-         sqle.printStackTrace(); 
-     } 
-     return con;
-		
-  } // ende: public static void main() 
- 
-} // ende: public class SimpleQuery 
