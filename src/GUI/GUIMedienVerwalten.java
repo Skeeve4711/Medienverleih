@@ -220,7 +220,7 @@ public class GUIMedienVerwalten implements WindowListener{
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                throw new UnsupportedOperationException("Not supported yet."); 
+                // Nicht genutzt
             }
 
         });

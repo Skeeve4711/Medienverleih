@@ -74,7 +74,7 @@ public class GUIMain implements WindowListener{
 	private void initialize() {
 		frame = new JFrame("Medienverleih");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
-	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-500)/2, 1300, 500);
+	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.addWindowListener(this);
@@ -223,7 +223,7 @@ public class GUIMain implements WindowListener{
 
             @Override
             public void changedUpdate(DocumentEvent e) {
-                throw new UnsupportedOperationException("Not supported yet."); 
+                // Nicht genutzt
             }
 
         });
