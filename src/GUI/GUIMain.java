@@ -27,7 +27,8 @@ import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
-import javax.swing.JLabel; 
+import javax.swing.JLabel;
+import java.awt.Color; 
 
 public class GUIMain implements WindowListener{
 
@@ -36,6 +37,7 @@ public class GUIMain implements WindowListener{
 	private Connection con;
 	private JTextField textFieldSuche;
 	private JComboBox<String> comboBoxKategorie;
+	private TableRowSorter<TableModel> rowSorter;
 	
 	// Spaltennamen der Tabellen
 	static String[] columnNamesFilme = {"Art. Nr.",
@@ -58,6 +60,7 @@ public class GUIMain implements WindowListener{
 			"Haus Nr."};
 	
 	private ArrayList<String> nummern;
+	private JTextField textFieldError;
 	
 
 	
@@ -170,7 +173,6 @@ public class GUIMain implements WindowListener{
 		comboBoxKategorie = new JComboBox<>();
 		comboBoxKategorie.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				nummern = new ArrayList<>();
 				String kategorie = comboBoxKategorie.getSelectedItem().toString();
 				try {
 					PreparedStatement anz = con.prepareStatement("select count(*) from " + kategorie);
@@ -227,7 +229,7 @@ public class GUIMain implements WindowListener{
 				        		  if(table.getColumnName(column) == "Art. Nr.") name = "Artikelnummer";
 				        		  else if(table.getColumnName(column) == "Regie") name = "Regisseur";
 				        		  else if(table.getColumnName(column) == "Status") {
-				        			  if( aenderung.equals("Verliehen")) {
+				        			  if(aenderung.equals("Verliehen")) {
 				        				  aenderung = "0";
 				        			  } else if (aenderung.equals("Verkauft")) {
 				        				  aenderung = "1";
@@ -242,18 +244,25 @@ public class GUIMain implements WindowListener{
 				        		  }
 				        		  sql += " set " + name + "=" +"\'" + aenderung + "\'";
 				        		  sql += " where artikelnummer=" + "\'" + nummern.get(row) + "\'";
-					        	  System.out.println(sql);
 					        	  PreparedStatement pst = con.prepareStatement(sql);
 					        	  pst.executeUpdate();
+					        	  textFieldError.setForeground(Color.GREEN);
+					        	  textFieldError.setText("Erfolg");
 					          } catch(SQLException el) {
-					        	  el.printStackTrace();
+					        	  textFieldError.setForeground(Color.RED);
+					        	  textFieldError.setText("Fehler");
 					          }
 					      }
 					    });
+					// Enthaelt Artikelnummern
+					nummern = new ArrayList<>();
 				    for(int i=0;i<zeilenanzahl;i++) {
 				    	nummern.add(table.getModel().getValueAt(i, 0).toString());
 				    }
 					TableColumn column = null;
+					// Suchen ermöglichen
+					rowSorter = new TableRowSorter<>(table.getModel());
+					table.setRowSorter(rowSorter);
 					for (int i = 0; i < spaltenanzahl-1; i++) {
 					    column = table.getColumnModel().getColumn(i);
 					    column.setPreferredWidth(120);
@@ -272,8 +281,6 @@ public class GUIMain implements WindowListener{
 		
 		// Feld, um in allen Spalten zu suchen
 		textFieldSuche = new JTextField();
-		TableRowSorter<TableModel> rowSorter = new TableRowSorter<>(table.getModel());
-		table.setRowSorter(rowSorter);
         textFieldSuche.getDocument().addDocumentListener(new DocumentListener(){
 
             @Override
@@ -311,6 +318,12 @@ public class GUIMain implements WindowListener{
 		JLabel lblSuche = new JLabel("Suche");
 		lblSuche.setBounds(840, 40, 43, 15);
 		frame.getContentPane().add(lblSuche);
+		
+		textFieldError = new JTextField();
+		textFieldError.setEditable(false);
+		textFieldError.setColumns(10);
+		textFieldError.setBounds(1146, 35, 100, 25);
+		frame.getContentPane().add(textFieldError);
 	}
 	
 	public JFrame getFrame() {
@@ -362,8 +375,6 @@ public class GUIMain implements WindowListener{
 			e1.printStackTrace();
 		}
 	}
-
-
 }
 
 

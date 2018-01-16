@@ -7,11 +7,8 @@ import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 
 import javax.swing.JFrame;
-import javax.print.attribute.AttributeSet;
 import javax.swing.JButton;
 import javax.swing.JTextField;
-
-import com.sun.xml.internal.txw2.Document;
 
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;

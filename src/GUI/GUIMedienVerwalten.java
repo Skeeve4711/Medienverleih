@@ -1,4 +1,5 @@
 package GUI;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
@@ -35,11 +36,13 @@ public class GUIMedienVerwalten implements WindowListener{
 	private String kategorie;
 	private boolean bestaetigt;
 	private ArrayList<String> nummern;
+	private TableRowSorter<TableModel> rowSorter;
 	
 	private JFrame frame;
 	private JTable table;
 	private Connection con;
 	private JComboBox<String> comboBoxKategorie;
+	private JTextField textFieldError;
 	
 	
 	/**
@@ -233,11 +236,13 @@ public class GUIMedienVerwalten implements WindowListener{
 			        		  }
 			        		  sql += " set " + name + "=" +"\'" + aenderung + "\'";
 			        		  sql += " where artikelnummer=" + "\'" + nummern.get(row) + "\'";
-				        	  System.out.println(sql);
 				        	  PreparedStatement pst = con.prepareStatement(sql);
 				        	  pst.executeUpdate();
+				        	  textFieldError.setForeground(Color.GREEN);
+				        	  textFieldError.setText("Erfolg");
 				          } catch(SQLException el) {
-				        	  el.printStackTrace();
+				        	  textFieldError.setForeground(Color.RED);
+				        	  textFieldError.setText("Fehler");
 				          }
 				      }
 				    });
@@ -246,6 +251,9 @@ public class GUIMedienVerwalten implements WindowListener{
 			    for(int i=0;i<zeilenanzahl;i++) {
 			    	nummern.add(table.getModel().getValueAt(i, 0).toString());
 			    }
+			    // Suchen ermöglichen
+				rowSorter = new TableRowSorter<>(table.getModel());
+				table.setRowSorter(rowSorter);
 				TableColumn column = null;
 				for (int i = 0; i < spaltenanzahl-1; i++) {
 				    column = table.getColumnModel().getColumn(i);
@@ -275,8 +283,6 @@ public class GUIMedienVerwalten implements WindowListener{
 		
 		// Feld, um in allen Spalten zu suchen
 		JTextField textFieldSuche = new JTextField();
-		TableRowSorter<TableModel> rowSorter = new TableRowSorter<>(table.getModel());
-		table.setRowSorter(rowSorter);
         textFieldSuche.getDocument().addDocumentListener(new DocumentListener(){
 
             @Override
@@ -314,6 +320,12 @@ public class GUIMedienVerwalten implements WindowListener{
 		JLabel lblSuche = new JLabel("Suche");
 		lblSuche.setBounds(607, 40, 53, 15);
 		frame.getContentPane().add(lblSuche);
+		
+		textFieldError = new JTextField();
+		textFieldError.setEditable(false);
+		textFieldError.setBounds(913, 35, 100, 25);
+		frame.getContentPane().add(textFieldError);
+		textFieldError.setColumns(10);
 		
 
 	}
