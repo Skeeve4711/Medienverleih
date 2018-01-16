@@ -39,6 +39,7 @@ public class GUIMedienHinzufuegen implements WindowListener{
 	private JTextField textFieldRegisseur;
 	private Connection con;
 	private JTextField textFieldFilmstudio;
+	private JComboBox<String> comboBoxStatus;
 
 	/**
 	 * Launch the application.
@@ -74,6 +75,15 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-800)/2, (screenSize.height-500)/2, 800, 500);
 		frame.getContentPane().setLayout(null);
+		
+		comboBoxStatus = new JComboBox<>();
+		comboBoxStatus.setBounds(187, 271, 200, 25);
+		comboBoxStatus.addItem("Verliehen");
+		comboBoxStatus.addItem("Verkauft");
+		comboBoxStatus.addItem("Entsorgt");
+		comboBoxStatus.addItem("Auf Lager");
+		comboBoxStatus.setSelectedIndex(3);
+		frame.getContentPane().add(comboBoxStatus);
 		
 		textFieldSchauspieler = new JTextField();
 		textFieldSchauspieler.setColumns(10);
@@ -236,6 +246,10 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		btnFertigstellen.setBounds(300, 342, 226, 35);
 		frame.getContentPane().add(btnFertigstellen);
 		
+		JLabel lblStatus = new JLabel("Status");
+		lblStatus.setBounds(31, 276, 70, 15);
+		frame.getContentPane().add(lblStatus);
+		
 		// Wenn geaendert werden soll, Daten übernehmen
 		if(this.aendern && this.nummer != null) {
 			try {
@@ -320,7 +334,16 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		String daten = textFieldArtikelnummer.getText() + ",";
 		daten += textFieldKaufpreis.getText() + ",";
 		daten += textFieldAltersfreigabe.getText() + ",";
-		daten += "3" + ",";
+		String status = comboBoxStatus.getSelectedItem().toString();
+		if(status.equals("Verliehen")) {
+			daten += "0" + ",";
+		} else 	if(status.equals("Verkauft")) {
+			daten += "1" + ",";
+		} else 	if(status.equals("Entsorgt")) {
+			daten += "2" + ",";
+		} else {
+			daten += "3" + ",";
+		}
 		if(kategorie.equals("Buecher")) {
 			daten += "\'" + textFieldSchauspieler.getText() + "\',"; 
 		} else {
@@ -351,6 +374,17 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		String daten = "artikelnummer=" + textFieldArtikelnummer.getText() + ",";
 		daten += "kaufpreis= " + textFieldKaufpreis.getText() + ",";
 		daten += "altersfreigabe= " + textFieldAltersfreigabe.getText() + ",";
+		daten += "status=";
+		String status = comboBoxStatus.getSelectedItem().toString();
+		if(status.equals("Verliehen")) {
+			daten += "0" + ",";
+		} else 	if(status.equals("Verkauft")) {
+			daten += "1" + ",";
+		} else 	if(status.equals("Entsorgt")) {
+			daten += "2" + ",";
+		} else {
+			daten += "3" + ",";
+		}
 		if(kategorie.equals("Buecher")) {
 			daten += "autor=\'" + textFieldSchauspieler.getText() + "\',"; 
 		} else if(kategorie.equals("Filme")){
@@ -371,13 +405,12 @@ public class GUIMedienHinzufuegen implements WindowListener{
 	// Befuellt alle Felder in GUI
 	public void textFelderFuellen(ResultSet rs) throws SQLException{
 		int index = 1;
-		for(int i=1;i<11;i++) {
-			System.out.println(rs.getString(i));
-		}
 		textFieldArtikelnummer.setText(rs.getString(index++));
 		textFieldKaufpreis.setText(rs.getString(index++));
 		textFieldAltersfreigabe.setText(rs.getString(index++));
-		index++;
+		int ind = Integer.parseInt(rs.getString(index++));
+		System.out.println(ind);
+		comboBoxStatus.setSelectedIndex(ind);
 		if(this.kategorie.equals("Buecher")) {
 			textFieldSchauspieler.setText(rs.getString(index++)); 
 		} else {
