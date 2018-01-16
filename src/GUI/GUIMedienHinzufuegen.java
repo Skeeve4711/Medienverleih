@@ -12,21 +12,21 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.swing.JFrame;
-import javax.print.attribute.AttributeSet;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 
-import com.sun.xml.internal.txw2.Document;
-
 import javax.swing.JLabel;
-import javax.swing.JPasswordField;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
-import javax.swing.JList;
 import javax.swing.JComboBox;
 
 public class GUIMedienHinzufuegen implements WindowListener{
 
+	
+	private boolean aendern;
+	private String nummer;
+	private String kategorie;
+	
 	private JFrame frame;
 	private JTextField textFieldErscheinungsdatum;
 	private JTextField textFieldTitel;
@@ -47,7 +47,7 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIMedienHinzufuegen window = new GUIMedienHinzufuegen();
+					GUIMedienHinzufuegen window = new GUIMedienHinzufuegen(false, null, null);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -59,7 +59,10 @@ public class GUIMedienHinzufuegen implements WindowListener{
 	/**
 	 * Create the application.
 	 */
-	public GUIMedienHinzufuegen() {
+	public GUIMedienHinzufuegen(boolean aendern, String nummer, String kategorie) {
+		this.aendern = aendern;
+		this.nummer = nummer;
+		this.kategorie = kategorie;
 		initialize();
 	}
 
@@ -166,6 +169,7 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		textFieldFilmstudio.setBounds(552, 271, 200, 25);
 		frame.getContentPane().add(textFieldFilmstudio);
 		
+		// Feld. um Kategorie des neuen Mediums auszuwaehlen
 		JComboBox<String> comboBoxKategorie = new JComboBox<>();
 		comboBoxKategorie.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -208,24 +212,45 @@ public class GUIMedienHinzufuegen implements WindowListener{
 				try {
 					con = SimpleQuery.connect();
 					String kategorie = comboBoxKategorie.getSelectedItem().toString();
-					String statement = "insert into " + kategorie + " values(";
-					String daten = getData(kategorie);
+					String statement, daten;
+					if(aendern) {
+						statement = "update " + kategorie + " set ";
+						daten = getDataUpdate(kategorie);
+						if(daten != null) daten += "where artikelnummer=" + nummer;
+					} else {
+						statement = "insert into " + kategorie + " values(";
+						daten = getDataInsert(kategorie);
+
+					}
 					if(daten != null) { // statement nur ausführen, wenn auch Daten vorhanden sind
 						statement += daten;
-						System.out.println(statement);
 						PreparedStatement pst = con.prepareStatement(statement);
 						pst.executeUpdate();
 					}
 				}catch(SQLException ex) {
 					ex.printStackTrace();
 				}
-				windowClosing(new WindowEvent(frame,WindowEvent.WINDOW_CLOSING)); // TODO Kunden hinzufuegen
+				windowClosing(new WindowEvent(frame,WindowEvent.WINDOW_CLOSING));
 			}
 		});
 		btnFertigstellen.setBounds(300, 342, 226, 35);
 		frame.getContentPane().add(btnFertigstellen);
 		
-
+		// Wenn geaendert werden soll, Daten übernehmen
+		if(this.aendern && this.nummer != null) {
+			try {
+				frame.setTitle("Medium ändern");
+				con = SimpleQuery.connect();
+				String statement = "Select * from " + kategorie + " where artikelnummer=" + nummer;
+				PreparedStatement pst = con.prepareStatement(statement);
+				ResultSet rs = pst.executeQuery();
+				rs.next();
+				textFelderFuellen(rs);
+				comboBoxKategorie.setEnabled(false);
+			}catch(SQLException ex) {
+				ex.printStackTrace();
+			}
+		}
 
 	}
 	
@@ -270,7 +295,7 @@ public class GUIMedienHinzufuegen implements WindowListener{
 	@Override
 	public void windowClosing(WindowEvent e) {
 		frame.dispose();
-		GUIMedienVerwalten oberflaeche = new GUIMedienVerwalten();
+		GUIMedienVerwalten oberflaeche = new GUIMedienVerwalten(false, null , null);
 		oberflaeche.getFrame().setVisible(true);
 		try {
 			if(con != null) {
@@ -282,8 +307,8 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		}
 	}
 	
-	// Setzt String aus allen Feldern für Statement zusammen
-	public String getData(String kategorie) {
+	// Setzt String aus allen Feldern für Einfuege-Statement zusammen
+	public String getDataInsert(String kategorie) {
 		// Prüfen, ob alle Textfelder Inhalt besitzen
 		 for (Component c : frame.getContentPane().getComponents()) {
 		     if (c instanceof JTextField) { 
@@ -311,5 +336,60 @@ public class GUIMedienHinzufuegen implements WindowListener{
 		daten += textFieldLeihpreis.getText();
 		daten += ")";
 		return daten;
+	}
+	
+	// Setzt String aus allen Feldern für Update-Statement zusammen
+	public String getDataUpdate(String kategorie) {
+		// Prüfen, ob alle Textfelder Inhalt besitzen
+		 for (Component c : frame.getContentPane().getComponents()) {
+		     if (c instanceof JTextField) { 
+		        if(((JTextField)c).getText().trim().isEmpty()) {
+		        	return null;
+		        }
+		     }
+		 }
+		String daten = "artikelnummer=" + textFieldArtikelnummer.getText() + ",";
+		daten += "kaufpreis= " + textFieldKaufpreis.getText() + ",";
+		daten += "altersfreigabe= " + textFieldAltersfreigabe.getText() + ",";
+		if(kategorie.equals("Buecher")) {
+			daten += "autor=\'" + textFieldSchauspieler.getText() + "\',"; 
+		} else if(kategorie.equals("Filme")){
+			daten += "schauspieler=\'" + textFieldSchauspieler.getText() + "\',";
+			daten += "regisseur=\'" + textFieldRegisseur.getText() + "\',";
+			daten += "filmstudio=\'" + textFieldFilmstudio.getText() + "\',";
+		} else {
+			daten += "entwickler=\'" + textFieldSchauspieler.getText() + "\',";
+			daten += "publisher=\'" + textFieldRegisseur.getText() + "\',";
+		}
+		daten += "erscheinungsdatum=\'" + textFieldErscheinungsdatum.getText() + "\',";
+		daten += "titel=\'" + textFieldTitel.getText() + "\',";
+		daten += "genre=\'" + textFieldGenre.getText() + "\',";
+		daten += "leihpreis=" + textFieldLeihpreis.getText();
+		return daten;
+	}
+	
+	// Befuellt alle Felder in GUI
+	public void textFelderFuellen(ResultSet rs) throws SQLException{
+		int index = 1;
+		for(int i=1;i<11;i++) {
+			System.out.println(rs.getString(i));
+		}
+		textFieldArtikelnummer.setText(rs.getString(index++));
+		textFieldKaufpreis.setText(rs.getString(index++));
+		textFieldAltersfreigabe.setText(rs.getString(index++));
+		index++;
+		if(this.kategorie.equals("Buecher")) {
+			textFieldSchauspieler.setText(rs.getString(index++)); 
+		} else {
+			textFieldSchauspieler.setText(rs.getString(index++));
+			textFieldRegisseur.setText(rs.getString(index++));
+			if(kategorie.equals("Filme")) {
+				textFieldFilmstudio.setText(rs.getString(index++));
+			}
+		}
+		textFieldErscheinungsdatum.setText(rs.getString(index++));
+		textFieldTitel.setText(rs.getString(index++));
+		textFieldGenre.setText(rs.getString(index++));
+		textFieldLeihpreis.setText(rs.getString(index++));
 	}
 }

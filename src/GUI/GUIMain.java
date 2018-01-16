@@ -13,6 +13,7 @@ import java.awt.event.WindowListener;
 import java.awt.event.ActionEvent;
 
 import java.sql.*;
+
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -30,6 +31,9 @@ public class GUIMain implements WindowListener{
 	private JFrame frame;
 	private JTable table;
 	private Connection con;
+	private JTextField textFieldSuche;
+	
+	// Spaltennamen der Tabellen
 	static String[] columnNamesFilme = {"Art. Nr.",
 			"Kaufpreis", "Altersfreigabe", "Status",
 			"Schauspieler", "Regie", "Filmstudio",
@@ -43,7 +47,13 @@ public class GUIMain implements WindowListener{
 			"Kaufpreis", "Altersfreigabe", "Status",
 			"Entwickler", "Publisher", "Erscheinungsdatum",
 			"Titel", "Genre", "Leihpreis"};
-	private JTextField textFieldSuche;
+	static String[] columnNamesKunden = {"Kunden Nr.",
+			"Vorname", "Nachname", "E-Mail",
+			"Alter", "Strafpreis", "Passwort",
+			"PLZ", "Ort", "Straße",
+			"Haus Nr."};
+	
+
 	
 	/**
 	 * Launch the application.
@@ -75,7 +85,6 @@ public class GUIMain implements WindowListener{
 		frame = new JFrame("Medienverleih");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
-		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		frame.getContentPane().setLayout(null);
 		frame.addWindowListener(this);
 		this.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
@@ -86,6 +95,11 @@ public class GUIMain implements WindowListener{
 			public void actionPerformed(ActionEvent e) {
 				GUIKundenVerwalten verwaltung = new GUIKundenVerwalten();
 				verwaltung.getFrame().setVisible(true);
+				try {
+					if(con!= null) con.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 				frame.dispose();
 			}
 		});
@@ -108,15 +122,34 @@ public class GUIMain implements WindowListener{
 		btnVerkaufen.setBounds(24, 320, 226, 35);
 		frame.getContentPane().add(btnVerkaufen);
 		
+		// Öffnet das Fenster zur Kundenansicht
 		JButton btnNewButton_1 = new JButton("Kundenansicht");
+		btnNewButton_1.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				try {
+					if(con != null) con.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+				frame.dispose();
+				GUIKundenansicht a = new GUIKundenansicht();
+				a.getFrame().setVisible(true);
+			}
+		});
 		btnNewButton_1.setBounds(24, 77, 226, 35);
 		frame.getContentPane().add(btnNewButton_1);
 		
+		// Medien verwalten Fenster öffnen
 		JButton btnMedienVerwalten = new JButton("Medien verwalten");
 		btnMedienVerwalten.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				try {
+					if(con != null) con.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
 				frame.dispose();
-				GUIMedienVerwalten medien = new GUIMedienVerwalten();
+				GUIMedienVerwalten medien = new GUIMedienVerwalten(false, null, null);
 				medien.getFrame().setVisible(true);
 			}
 		});
@@ -127,6 +160,7 @@ public class GUIMain implements WindowListener{
 		scrollPaneMedien.setBounds(298, 77, 982, 277);
 		frame.getContentPane().add(scrollPaneMedien);
 		
+		// Feld zur Auswahl der Kategorie
 		JComboBox<String> comboBoxKategorie = new JComboBox<>();
 		comboBoxKategorie.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -174,7 +208,6 @@ public class GUIMain implements WindowListener{
 				    } else {
 				    	table = new JTable(data, columnNamesVideospiele);
 				    }
-					
 					TableColumn column = null;
 					for (int i = 0; i < spaltenanzahl-1; i++) {
 					    column = table.getColumnModel().getColumn(i);

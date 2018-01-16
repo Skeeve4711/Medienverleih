@@ -1,21 +1,22 @@
 package GUI;
+
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
+
+import javax.swing.JFrame;
+import javax.swing.JButton;
+
+import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-
-import javax.swing.JFrame;
-import javax.swing.JButton;
-import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
-import javax.swing.JLabel;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
@@ -23,14 +24,15 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import javax.swing.JLabel;
 
-public class GUIKundenVerwalten implements WindowListener{
+public class GUIKundenansicht implements WindowListener{
 
 	private JFrame frame;
-	private JTextField textFieldSuche;
 	private Connection con;
 	private JTable table;
-	
+	private JTextField textFieldSuche;
+
 	/**
 	 * Launch the application.
 	 */
@@ -38,7 +40,7 @@ public class GUIKundenVerwalten implements WindowListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIKundenVerwalten window = new GUIKundenVerwalten();
+					GUIKundenansicht window = new GUIKundenansicht();
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -50,7 +52,7 @@ public class GUIKundenVerwalten implements WindowListener{
 	/**
 	 * Create the application.
 	 */
-	public GUIKundenVerwalten() {
+	public GUIKundenansicht() {
 		initialize();
 	}
 
@@ -58,77 +60,35 @@ public class GUIKundenVerwalten implements WindowListener{
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame("Kunden verwalten");
+		frame = new JFrame();
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
 		frame.getContentPane().setLayout(null);
 		frame.addWindowListener(this);
-		con = SimpleQuery.connect(); // Verbindung zur Datenbank herstellen
+		this.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
 		
-		// Kunden Hinzufuegen Fenster oeffnen
-		JButton btnHinzufuegen = new JButton("Hinzufügen");
-		btnHinzufuegen.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				frame.dispose();
-					try {
-						if(con != null) con.close();
-					} catch (SQLException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-				GUIKundenHinzufuegen hinzufuegen = new GUIKundenHinzufuegen();
-				hinzufuegen.getFrame().setVisible(true);
-			}
-		});
-		btnHinzufuegen.setBounds(24, 30, 226, 35);
-		frame.getContentPane().add(btnHinzufuegen);
-		
-		// Kunden entfernen und Bestaetigung abfragen
-		JButton btnEntfernen = new JButton("Entfernen");
-		btnEntfernen.addActionListener(new ActionListener() { // TODO Rückgabewert
+		// Schließt das Fenster und öffnet das Hauptfenster
+		JButton btnSchliessen = new JButton("Schliessen");
+		btnSchliessen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.dispose();
 				try {
-					if(con != null) con.close();
-				} catch (SQLException el) {
-					// TODO Auto-generated catch block
-					el.printStackTrace();
+					if(con != null) {
+						con.close();
+					}
+				} catch (SQLException e1) {
+					e1.printStackTrace();
 				}
-				GUIBestaetigenKundenVerwalten  bestaetigung = new GUIBestaetigenKundenVerwalten(); // TODO Rückgabewert auswerten
-				bestaetigung.getFrame().setVisible(true);
+				frame.dispose();
+				GUIMain g = new GUIMain();
+				g.getFrame().setVisible(true);
 			}
 		});
-		btnEntfernen.setBounds(24, 87, 226, 35);
-		frame.getContentPane().add(btnEntfernen);
-		
-		// Ausgewählten Kunden bearbeiten
-		JButton btnaendern = new JButton("Ändern");
-		btnaendern.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				
-			}
-		});
-		btnaendern.setBounds(24, 144, 226, 35);
-		frame.getContentPane().add(btnaendern);
+		btnSchliessen.setBounds(29, 317, 200, 25);
+		frame.getContentPane().add(btnSchliessen);
 		
 		JScrollPane scrollPaneKunden = new JScrollPane();
-		scrollPaneKunden.setBounds(290, 84, 990, 248);
+		scrollPaneKunden.setBounds(242, 56, 1038, 226);
 		frame.getContentPane().add(scrollPaneKunden);
-		
-		// Fenster schliessen und zum Hauptfenster zurückkehren
-		JButton btnFertigStellen = new JButton("Fertig stellen");
-		btnFertigStellen.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				windowClosing(new WindowEvent(frame,WindowEvent.WINDOW_CLOSING));
-			}
-		});
-		btnFertigStellen.setBounds(24, 297, 226, 35);
-		frame.getContentPane().add(btnFertigStellen);
-		
-		JLabel lblSuche = new JLabel("Suche");
-		lblSuche.setBounds(354, 40, 70, 15);
-		frame.getContentPane().add(lblSuche);
-		
 		try {
 			PreparedStatement anz = con.prepareStatement("select count(*) from Kunden");
 			ResultSet anzahl = anz.executeQuery();
@@ -156,7 +116,10 @@ public class GUIKundenVerwalten implements WindowListener{
 			ex.printStackTrace();
 		}
 		
-
+		JLabel lblSuche = new JLabel("Suche");
+		lblSuche.setBounds(386, 17, 70, 15);
+		frame.getContentPane().add(lblSuche);
+		
 		// Feld, um in allen Spalten zu suchen
 		textFieldSuche = new JTextField();
 		TableRowSorter<TableModel> rowSorter = new TableRowSorter<>(table.getModel());
@@ -191,7 +154,7 @@ public class GUIKundenVerwalten implements WindowListener{
             }
 
         });
-		textFieldSuche.setBounds(421, 35, 200, 25);
+		textFieldSuche.setBounds(453, 12, 200, 25);
 		frame.getContentPane().add(textFieldSuche);
 		textFieldSuche.setColumns(10);
 	}
@@ -238,12 +201,13 @@ public class GUIKundenVerwalten implements WindowListener{
 	public void windowClosing(WindowEvent e) {
 		frame.dispose();
 		try {
-			if(con != null) con.close();
-		} catch (SQLException el) {
-			// TODO Auto-generated catch block
-			el.printStackTrace();
+			if(con != null) {
+				this.con.close();
+			}
+		} catch (SQLException e1) {
+			e1.printStackTrace();
 		}
-		GUIMain oberflaeche = new GUIMain();
-		oberflaeche.getFrame().setVisible(true);
+		GUIMain g = new GUIMain();
+		g.getFrame().setVisible(true);
 	}
 }

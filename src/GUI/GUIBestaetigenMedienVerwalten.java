@@ -15,7 +15,10 @@ import java.awt.event.ActionEvent;
 public class GUIBestaetigenMedienVerwalten implements WindowListener{
 
 	private JFrame frame;
-
+	
+	private String nummer;
+	private String kategorie;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -23,7 +26,7 @@ public class GUIBestaetigenMedienVerwalten implements WindowListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIBestaetigenMedienVerwalten window = new GUIBestaetigenMedienVerwalten();
+					GUIBestaetigenMedienVerwalten window = new GUIBestaetigenMedienVerwalten(null, null);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -35,7 +38,9 @@ public class GUIBestaetigenMedienVerwalten implements WindowListener{
 	/**
 	 * Create the application.
 	 */
-	public GUIBestaetigenMedienVerwalten() {
+	public GUIBestaetigenMedienVerwalten(String nummer, String kategorie) {
+		this.nummer = nummer;
+		this.kategorie = kategorie;
 		initialize();
 		
 	}
@@ -58,8 +63,8 @@ public class GUIBestaetigenMedienVerwalten implements WindowListener{
 		JButton btnJa = new JButton("Ja");
 		btnJa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.dispose(); // TODO Rueckgabewert
-				GUIMedienVerwalten verwaltung = new GUIMedienVerwalten();
+				frame.dispose();
+				GUIMedienVerwalten verwaltung = new GUIMedienVerwalten(true, nummer, kategorie);
 				verwaltung.getFrame().setVisible(true);
 			}
 		});
@@ -70,8 +75,8 @@ public class GUIBestaetigenMedienVerwalten implements WindowListener{
 		JButton btnNein = new JButton("Nein");
 		btnNein.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.dispose(); // TODO Rueckgabewert
-				GUIMedienVerwalten verwaltung = new GUIMedienVerwalten();
+				frame.dispose(); 
+				GUIMedienVerwalten verwaltung = new GUIMedienVerwalten(false, nummer, null);
 				verwaltung.getFrame().setVisible(true);
 			}
 		});
@@ -120,7 +125,7 @@ public class GUIBestaetigenMedienVerwalten implements WindowListener{
 	@Override
 	public void windowClosing(WindowEvent e) {
 		frame.dispose();
-		GUIMedienVerwalten oberflaeche = new GUIMedienVerwalten(); // TODO Rückgabewert
+		GUIMedienVerwalten oberflaeche = new GUIMedienVerwalten(false, null, null); 
 		oberflaeche.getFrame().setVisible(true);
 	}
 

@@ -28,10 +28,15 @@ import javax.swing.JLabel;
 
 public class GUIMedienVerwalten implements WindowListener{
 
+	private String nummer;
+	private String kategorie;
+	private boolean bestaetigt;
+	
 	private JFrame frame;
 	private JTable table;
 	private Connection con;
-
+	private JComboBox<String> comboBoxKategorie;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -39,7 +44,7 @@ public class GUIMedienVerwalten implements WindowListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIMedienVerwalten window = new GUIMedienVerwalten();
+					GUIMedienVerwalten window = new GUIMedienVerwalten(false, null, null);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -51,7 +56,10 @@ public class GUIMedienVerwalten implements WindowListener{
 	/**
 	 * Create the application.
 	 */
-	public GUIMedienVerwalten() {
+	public GUIMedienVerwalten(boolean bestaetigt, String nummer, String kategorie) {
+		this.bestaetigt = bestaetigt;
+		this.nummer = nummer;
+		this.kategorie = kategorie;
 		initialize();
 	}
 
@@ -76,7 +84,7 @@ public class GUIMedienVerwalten implements WindowListener{
 					e.printStackTrace();
 				}
 				frame.dispose();
-				GUIMedienHinzufuegen hinzufuegen = new GUIMedienHinzufuegen();
+				GUIMedienHinzufuegen hinzufuegen = new GUIMedienHinzufuegen(false, null, null);
 				hinzufuegen.getFrame().setVisible(true);
 			}
 		});
@@ -85,16 +93,23 @@ public class GUIMedienVerwalten implements WindowListener{
 		
 		// Medium entfernen und Bestaetigung abfragen
 		JButton btnAusschliessen = new JButton("Ausschließen");
-		btnAusschliessen.addActionListener(new ActionListener() { // TODO Rückgabewert
+		btnAusschliessen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					con.close();
-				} catch (SQLException ex) {
-					ex.printStackTrace();
-				}
-				frame.dispose();
-				GUIBestaetigenMedienVerwalten  bestaetigung = new GUIBestaetigenMedienVerwalten(); // TODO Rückgabewert auswerten
-				bestaetigung.getFrame().setVisible(true);
+				int zeile = table.getSelectedRow();
+					if(zeile != -1) {
+						frame.dispose();
+						try {
+							if(con != null) {
+								con.close();
+							}
+						} catch (SQLException ex) {
+							ex.printStackTrace();
+						}
+						String kategorie = comboBoxKategorie.getSelectedItem().toString();
+						String nummer = table.getModel().getValueAt(zeile, 0).toString();
+						GUIBestaetigenMedienVerwalten bestaetigung = new GUIBestaetigenMedienVerwalten(nummer, kategorie);
+						bestaetigung.getFrame().setVisible(true);
+					}
 			}
 		});
 		btnAusschliessen.setBounds(24, 87, 226, 35);
@@ -104,7 +119,19 @@ public class GUIMedienVerwalten implements WindowListener{
 		JButton btnaendern = new JButton("Ändern");
 		btnaendern.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+				int zeile = table.getSelectedRow();
+				if(zeile != -1) {
+					try {
+						con.close();
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
+					String nummer = table.getModel().getValueAt(zeile, 0).toString();
+					String kategorie = comboBoxKategorie.getSelectedItem().toString();
+					GUIMedienHinzufuegen aendern = new GUIMedienHinzufuegen(true, nummer, kategorie);
+					aendern.getFrame().setVisible(true);
+					frame.dispose();
+				}
 			}
 		});
 		btnaendern.setBounds(24, 144, 226, 35);
@@ -114,8 +141,20 @@ public class GUIMedienVerwalten implements WindowListener{
 		scrollPaneMedien.setBounds(290, 87, 978, 245);
 		frame.getContentPane().add(scrollPaneMedien);
 		
+		// Medium ausschliessen
+		if(this.bestaetigt) {
+			String sql = "update " + kategorie + " set status=2 where artikelnummer=" + this.nummer;
+			System.out.println(sql);
+			try {
+				PreparedStatement pst = con.prepareStatement(sql);
+				pst.executeUpdate();
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}
+		
 		// Richtige Daten anzeigen
-		JComboBox<String> comboBoxKategorie = new JComboBox<>();
+		comboBoxKategorie = new JComboBox<>();
 		comboBoxKategorie.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
 			try {
@@ -231,6 +270,8 @@ public class GUIMedienVerwalten implements WindowListener{
 		JLabel lblSuche = new JLabel("Suche");
 		lblSuche.setBounds(607, 40, 53, 15);
 		frame.getContentPane().add(lblSuche);
+		
+
 	}
 	
 	public JFrame getFrame() {
