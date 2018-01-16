@@ -13,6 +13,7 @@ import java.awt.event.WindowListener;
 import java.awt.event.ActionEvent;
 
 import java.sql.*;
+import java.util.ArrayList;
 
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
@@ -24,6 +25,8 @@ import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.JLabel; 
 
 public class GUIMain implements WindowListener{
@@ -32,6 +35,7 @@ public class GUIMain implements WindowListener{
 	private JTable table;
 	private Connection con;
 	private JTextField textFieldSuche;
+	private JComboBox<String> comboBoxKategorie;
 	
 	// Spaltennamen der Tabellen
 	static String[] columnNamesFilme = {"Art. Nr.",
@@ -52,6 +56,8 @@ public class GUIMain implements WindowListener{
 			"Alter", "Strafpreis", "Passwort",
 			"PLZ", "Ort", "Straße",
 			"Haus Nr."};
+	
+	private ArrayList<String> nummern;
 	
 
 	
@@ -161,9 +167,10 @@ public class GUIMain implements WindowListener{
 		frame.getContentPane().add(scrollPaneMedien);
 		
 		// Feld zur Auswahl der Kategorie
-		JComboBox<String> comboBoxKategorie = new JComboBox<>();
+		comboBoxKategorie = new JComboBox<>();
 		comboBoxKategorie.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
+				nummern = new ArrayList<>();
 				String kategorie = comboBoxKategorie.getSelectedItem().toString();
 				try {
 					PreparedStatement anz = con.prepareStatement("select count(*) from " + kategorie);
@@ -208,12 +215,49 @@ public class GUIMain implements WindowListener{
 				    } else {
 				    	table = new JTable(data, columnNamesVideospiele);
 				    }
+				    // Listener, um Datenbank über Tabelle zu bearbeiten
+					table.getModel().addTableModelListener(new TableModelListener() {
+					      public void tableChanged(TableModelEvent e) {
+					          int row = e.getFirstRow();
+					          int column = e.getColumn();
+					          String aenderung = table.getModel().getValueAt(row, column).toString(); 
+					          String name;
+					          try {
+					        	  String sql = "update " + comboBoxKategorie.getSelectedItem().toString();
+				        		  if(table.getColumnName(column) == "Art. Nr.") name = "Artikelnummer";
+				        		  else if(table.getColumnName(column) == "Regie") name = "Regisseur";
+				        		  else if(table.getColumnName(column) == "Status") {
+				        			  if( aenderung.equals("Verliehen")) {
+				        				  aenderung = "0";
+				        			  } else if (aenderung.equals("Verkauft")) {
+				        				  aenderung = "1";
+				        			  } else if (aenderung.equals("Entsorgt")) {
+				        				  aenderung = "2";
+				        			  } else if (aenderung.equals("Auf Lager")) {
+				        				  aenderung = "3";
+				        			  }
+				        			  name = "Status";
+				        		  } else {
+				        			  name = table.getColumnName(column);
+				        		  }
+				        		  sql += " set " + name + "=" +"\'" + aenderung + "\'";
+				        		  sql += " where artikelnummer=" + "\'" + nummern.get(row) + "\'";
+					        	  System.out.println(sql);
+					        	  PreparedStatement pst = con.prepareStatement(sql);
+					        	  pst.executeUpdate();
+					          } catch(SQLException el) {
+					        	  el.printStackTrace();
+					          }
+					      }
+					    });
+				    for(int i=0;i<zeilenanzahl;i++) {
+				    	nummern.add(table.getModel().getValueAt(i, 0).toString());
+				    }
 					TableColumn column = null;
 					for (int i = 0; i < spaltenanzahl-1; i++) {
 					    column = table.getColumnModel().getColumn(i);
 					    column.setPreferredWidth(120);
 					}
-					
 					scrollPaneMedien.setViewportView(table);
 				} catch(SQLException ex) {
 					ex.printStackTrace();
@@ -267,7 +311,6 @@ public class GUIMain implements WindowListener{
 		JLabel lblSuche = new JLabel("Suche");
 		lblSuche.setBounds(840, 40, 43, 15);
 		frame.getContentPane().add(lblSuche);
-
 	}
 	
 	public JFrame getFrame() {
@@ -319,6 +362,8 @@ public class GUIMain implements WindowListener{
 			e1.printStackTrace();
 		}
 	}
+
+
 }
 
 

@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import javax.swing.JFrame;
 import javax.swing.JButton;
@@ -21,6 +22,8 @@ import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
+import javax.swing.event.TableModelEvent;
+import javax.swing.event.TableModelListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
@@ -31,11 +34,13 @@ public class GUIMedienVerwalten implements WindowListener{
 	private String nummer;
 	private String kategorie;
 	private boolean bestaetigt;
+	private ArrayList<String> nummern;
 	
 	private JFrame frame;
 	private JTable table;
 	private Connection con;
 	private JComboBox<String> comboBoxKategorie;
+	
 	
 	/**
 	 * Launch the application.
@@ -201,7 +206,46 @@ public class GUIMedienVerwalten implements WindowListener{
 			    } else {
 			    	table = new JTable(data, GUIMain.columnNamesVideospiele);
 			    }
-				
+			    // Listener, um Datenbank über Tabelle zu bearbeiten
+				table.getModel().addTableModelListener(new TableModelListener() {
+				      public void tableChanged(TableModelEvent e) {
+				          int row = e.getFirstRow();
+				          int column = e.getColumn();
+				          String aenderung = table.getModel().getValueAt(row, column).toString(); 
+				          String name;
+				          try {
+				        	  String sql = "update " + comboBoxKategorie.getSelectedItem().toString();
+			        		  if(table.getColumnName(column) == "Art. Nr.") name = "Artikelnummer";
+			        		  else if(table.getColumnName(column) == "Regie") name = "Regisseur";
+			        		  else if(table.getColumnName(column) == "Status") {
+			        			  if( aenderung.equals("Verliehen")) {
+			        				  aenderung = "0";
+			        			  } else if (aenderung.equals("Verkauft")) {
+			        				  aenderung = "1";
+			        			  } else if (aenderung.equals("Entsorgt")) {
+			        				  aenderung = "2";
+			        			  } else if (aenderung.equals("Auf Lager")) {
+			        				  aenderung = "3";
+			        			  }
+			        			  name = "Status";
+			        		  } else {
+			        			  name = table.getColumnName(column);
+			        		  }
+			        		  sql += " set " + name + "=" +"\'" + aenderung + "\'";
+			        		  sql += " where artikelnummer=" + "\'" + nummern.get(row) + "\'";
+				        	  System.out.println(sql);
+				        	  PreparedStatement pst = con.prepareStatement(sql);
+				        	  pst.executeUpdate();
+				          } catch(SQLException el) {
+				        	  el.printStackTrace();
+				          }
+				      }
+				    });
+				// Enthaelt Artikelnummern
+				nummern = new ArrayList<>();
+			    for(int i=0;i<zeilenanzahl;i++) {
+			    	nummern.add(table.getModel().getValueAt(i, 0).toString());
+			    }
 				TableColumn column = null;
 				for (int i = 0; i < spaltenanzahl-1; i++) {
 				    column = table.getColumnModel().getColumn(i);
