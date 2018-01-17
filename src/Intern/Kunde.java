@@ -6,7 +6,7 @@ public class Kunde extends Person {
 	private static int nummer = 0;
 	private String passwort;
 	private final int kundennummer;
-	private static Pattern anforderungen = Pattern.compile("[a-zA-Z0-9]{4,}");
+	public static Pattern anforderungen = Pattern.compile("[a-zA-Z0-9]{4,}");
 	
 	public Kunde(String vorname, String name, String email, int alter, double strafpreis, String ort, String strasse,
 			String hausnummer, int plz, String passwort) {

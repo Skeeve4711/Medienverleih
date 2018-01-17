@@ -1,5 +1,6 @@
 package GUI;
 
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
@@ -25,6 +26,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.JLabel;
+import javax.swing.JPasswordField;
 
 public class GUIKundenansicht implements WindowListener{
 
@@ -32,6 +34,9 @@ public class GUIKundenansicht implements WindowListener{
 	private Connection con;
 	private JTable table;
 	private JTextField textFieldSuche;
+	private JPasswordField passwordField;
+	private String[] artikelnummern;
+	private String kategorie;
 
 	/**
 	 * Launch the application.
@@ -40,7 +45,7 @@ public class GUIKundenansicht implements WindowListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIKundenansicht window = new GUIKundenansicht();
+					GUIKundenansicht window = new GUIKundenansicht(null,null);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -50,9 +55,11 @@ public class GUIKundenansicht implements WindowListener{
 	}
 
 	/**
-	 * Create the application.
+	 * Create the application
 	 */
-	public GUIKundenansicht() {
+	public GUIKundenansicht(String[] artikelnummern,String kategorie) {
+		this.artikelnummern = artikelnummern;
+		this.kategorie = kategorie;
 		initialize();
 	}
 
@@ -67,24 +74,44 @@ public class GUIKundenansicht implements WindowListener{
 		frame.addWindowListener(this);
 		this.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
 		
-		// Schließt das Fenster und öffnet das Hauptfenster
-		JButton btnSchliessen = new JButton("Schliessen");
-		btnSchliessen.addActionListener(new ActionListener() {
+		// Schließt den Leihvorgang ab
+		JButton btnFertigStellen = new JButton("Fertig Stellen");
+		btnFertigStellen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				try {
-					if(con != null) {
-						con.close();
+				if(table.getSelectedRow() != -1) {
+					String passwort = String.valueOf(passwordField.getPassword());
+					String statement = "select passwort from Kunden where kundennummer=" + table.getModel().getValueAt(table.getSelectedRow(), 0);
+					statement += " and passwort=PASSWORD(\'" + passwort + "\')";
+					try {
+						PreparedStatement pst = con.prepareStatement(statement);
+						ResultSet rs = pst.executeQuery();
+						if(rs.next()) {
+							String upd = "update " + kategorie + " set status=0 where";
+							for(int i=0;i<artikelnummern.length;i++) {
+								upd += " artikelnummer=" + artikelnummern[i];
+								if(i < artikelnummern.length-1) upd += " or";
+							}
+							PreparedStatement pst2 = con.prepareStatement(upd); // TODO Historie
+							pst2.executeUpdate();
+						} else {
+							return;
+						}
+						if(con != null) {
+							con.close();
+						}
+					} catch (SQLException e1) {
+						e1.printStackTrace();
 					}
-				} catch (SQLException e1) {
-					e1.printStackTrace();
+					frame.dispose();
+					GUIMain g = new GUIMain();
+					g.getFrame().setVisible(true);
+		        	g.getError().setForeground(Color.GREEN);;
+		        	g.getError().setText("Erfolg");
 				}
-				frame.dispose();
-				GUIMain g = new GUIMain();
-				g.getFrame().setVisible(true);
 			}
 		});
-		btnSchliessen.setBounds(29, 317, 200, 25);
-		frame.getContentPane().add(btnSchliessen);
+		btnFertigStellen.setBounds(29, 317, 200, 25);
+		frame.getContentPane().add(btnFertigStellen);
 		
 		JScrollPane scrollPaneKunden = new JScrollPane();
 		scrollPaneKunden.setBounds(242, 56, 1038, 226);
@@ -100,9 +127,10 @@ public class GUIKundenansicht implements WindowListener{
 		    String data[][] = new String[zeilenanzahl][spaltenanzahl];
 		    int indexA = 0;
 		    while(rs.next()) {
-		    	for(int i=1;i<spaltenanzahl+1;i++) {
-		    			data[indexA][i-1] = rs.getString(i);
-		    	}
+			    for(int i=1;i<spaltenanzahl+2;i++) {
+			    	if(i < 7) data[indexA][i-1] = rs.getString(i);
+			    	else if(i > 7) data[indexA][i-2] = rs.getString(i);
+			    }
 		    	indexA++;
 		    }	
 			TableColumn column = null;
@@ -157,6 +185,14 @@ public class GUIKundenansicht implements WindowListener{
 		textFieldSuche.setBounds(453, 12, 200, 25);
 		frame.getContentPane().add(textFieldSuche);
 		textFieldSuche.setColumns(10);
+		
+		passwordField = new JPasswordField();
+		passwordField.setBounds(91, 99, 117, 25);
+		frame.getContentPane().add(passwordField);
+		
+		JLabel lblPasswort = new JLabel("Passwort");
+		lblPasswort.setBounds(116, 72, 70, 15);
+		frame.getContentPane().add(lblPasswort);
 	}
 	
 	public JFrame getFrame() {

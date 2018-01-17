@@ -73,10 +73,9 @@ public class GUIKundenVerwalten implements WindowListener{
 					try {
 						if(con != null) con.close();
 					} catch (SQLException e) {
-						// TODO Auto-generated catch block
 						e.printStackTrace();
 					}
-				GUIKundenHinzufuegen hinzufuegen = new GUIKundenHinzufuegen();
+				GUIKundenHinzufuegen hinzufuegen = new GUIKundenHinzufuegen(false,null);
 				hinzufuegen.getFrame().setVisible(true);
 			}
 		});
@@ -91,7 +90,6 @@ public class GUIKundenVerwalten implements WindowListener{
 				try {
 					if(con != null) con.close();
 				} catch (SQLException el) {
-					// TODO Auto-generated catch block
 					el.printStackTrace();
 				}
 				GUIBestaetigenKundenVerwalten  bestaetigung = new GUIBestaetigenKundenVerwalten(); // TODO Rückgabewert auswerten
@@ -105,7 +103,18 @@ public class GUIKundenVerwalten implements WindowListener{
 		JButton btnaendern = new JButton("Ändern");
 		btnaendern.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				
+				int zeile = table.getSelectedRow();
+				if(zeile != -1) {
+					try {
+						con.close();
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
+					String nummer = table.getModel().getValueAt(zeile, 0).toString();
+					GUIKundenHinzufuegen aendern = new GUIKundenHinzufuegen(true, nummer);
+					aendern.getFrame().setVisible(true);
+					frame.dispose();
+				}
 			}
 		});
 		btnaendern.setBounds(24, 144, 226, 35);
@@ -140,8 +149,9 @@ public class GUIKundenVerwalten implements WindowListener{
 		    String data[][] = new String[zeilenanzahl][spaltenanzahl];
 		    int indexA = 0;
 		    while(rs.next()) {
-		    	for(int i=1;i<spaltenanzahl+1;i++) {
-		    			data[indexA][i-1] = rs.getString(i);
+		    	for(int i=1;i<spaltenanzahl+2;i++) {
+		    		if(i < 7) data[indexA][i-1] = rs.getString(i);
+		    		else if(i > 7) data[indexA][i-2] = rs.getString(i);
 		    	}
 		    	indexA++;
 		    }	
@@ -240,7 +250,6 @@ public class GUIKundenVerwalten implements WindowListener{
 		try {
 			if(con != null) con.close();
 		} catch (SQLException el) {
-			// TODO Auto-generated catch block
 			el.printStackTrace();
 		}
 		GUIMain oberflaeche = new GUIMain();

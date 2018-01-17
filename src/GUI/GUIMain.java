@@ -38,6 +38,7 @@ public class GUIMain implements WindowListener{
 	private JTextField textFieldSuche;
 	private JComboBox<String> comboBoxKategorie;
 	private TableRowSorter<TableModel> rowSorter;
+	private JLabel lblError;
 	
 	// Spaltennamen der Tabellen
 	static String[] columnNamesFilme = {"Art. Nr.",
@@ -55,7 +56,7 @@ public class GUIMain implements WindowListener{
 			"Titel", "Genre", "Leihpreis"};
 	static String[] columnNamesKunden = {"Kunden Nr.",
 			"Vorname", "Nachname", "E-Mail",
-			"Alter", "Strafpreis", "Passwort",
+			"Alter", "Strafpreis",
 			"PLZ", "Ort", "Straße",
 			"Haus Nr."};
 	
@@ -116,10 +117,36 @@ public class GUIMain implements WindowListener{
 		frame.getContentPane().add(btnKundenVerwalten);
 		
 		JButton btnNewButton = new JButton("Exemplare mit Strafpreisen");
-		btnNewButton.setBounds(24, 124, 226, 35);
+		btnNewButton.setBounds(24, 91, 226, 35);
 		frame.getContentPane().add(btnNewButton);
 		
 		JButton btnVerleihen = new JButton("Verleihen");
+		btnVerleihen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int[] zeilen = table.getSelectedRows();
+				lblError.setVisible(false);
+				if(zeilen.length > 0) {
+					String[] artikelnummern = new String[zeilen.length];
+					for(int i=0;i<zeilen.length;i++) {
+						if(!table.getModel().getValueAt(zeilen[i], 3).toString().equals("Auf Lager")) {
+							lblError.setVisible(true);
+							return;
+						}
+						artikelnummern[i] = table.getModel().getValueAt(zeilen[i], 0).toString();
+					}
+					String kategorie = comboBoxKategorie.getSelectedItem().toString();
+					GUIKundenansicht g = new GUIKundenansicht(artikelnummern, kategorie);
+					g.getFrame().setVisible(true);
+					try {
+						if(con!= null) con.close();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+					frame.dispose();
+				}
+				
+			}
+		});
 		btnVerleihen.setBounds(24, 226, 226, 35);
 		frame.getContentPane().add(btnVerleihen);
 		
@@ -130,23 +157,6 @@ public class GUIMain implements WindowListener{
 		JButton btnVerkaufen = new JButton("Verkaufen");
 		btnVerkaufen.setBounds(24, 320, 226, 35);
 		frame.getContentPane().add(btnVerkaufen);
-		
-		// Öffnet das Fenster zur Kundenansicht
-		JButton btnNewButton_1 = new JButton("Kundenansicht");
-		btnNewButton_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				try {
-					if(con != null) con.close();
-				} catch (SQLException e1) {
-					e1.printStackTrace();
-				}
-				frame.dispose();
-				GUIKundenansicht a = new GUIKundenansicht();
-				a.getFrame().setVisible(true);
-			}
-		});
-		btnNewButton_1.setBounds(24, 77, 226, 35);
-		frame.getContentPane().add(btnNewButton_1);
 		
 		// Medien verwalten Fenster öffnen
 		JButton btnMedienVerwalten = new JButton("Medien verwalten");
@@ -324,6 +334,12 @@ public class GUIMain implements WindowListener{
 		textFieldError.setColumns(10);
 		textFieldError.setBounds(1146, 35, 100, 25);
 		frame.getContentPane().add(textFieldError);
+		
+		lblError = new JLabel("Medium ist nicht auf Lager!");
+		lblError.setVisible(false);
+		lblError.setForeground(Color.RED);
+		lblError.setBounds(24, 164, 208, 15);
+		frame.getContentPane().add(lblError);
 	}
 	
 	public JFrame getFrame() {
@@ -374,6 +390,10 @@ public class GUIMain implements WindowListener{
 		} catch (SQLException e1) {
 			e1.printStackTrace();
 		}
+	}
+	
+	public JTextField getError() {
+		return textFieldError;
 	}
 }
 

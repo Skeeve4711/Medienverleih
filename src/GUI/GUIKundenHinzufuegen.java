@@ -1,19 +1,28 @@
 package GUI;
 
+import java.awt.Component;
 import java.awt.Dimension;
 import java.awt.EventQueue;
 import java.awt.Toolkit;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.regex.Matcher;
 
 import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 
+import Intern.Person;
+
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.Color;
 
 public class GUIKundenHinzufuegen implements WindowListener{
 
@@ -27,6 +36,10 @@ public class GUIKundenHinzufuegen implements WindowListener{
 	private JTextField textFieldStrasse;
 	private JPasswordField passwordField;
 	private JTextField textFieldHausnummer;
+	private Connection con;
+	private boolean aendern;
+	private String nummer;
+	private JLabel lblPasswortUngueltig;
 
 	/**
 	 * Launch the application.
@@ -35,7 +48,7 @@ public class GUIKundenHinzufuegen implements WindowListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIKundenHinzufuegen window = new GUIKundenHinzufuegen();
+					GUIKundenHinzufuegen window = new GUIKundenHinzufuegen(false,null);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -47,7 +60,9 @@ public class GUIKundenHinzufuegen implements WindowListener{
 	/**
 	 * Create the application.
 	 */
-	public GUIKundenHinzufuegen() {
+	public GUIKundenHinzufuegen(boolean aendern,String nummer) {
+		this.aendern = aendern;
+		this.nummer = nummer;
 		initialize();
 	}
 
@@ -64,7 +79,28 @@ public class GUIKundenHinzufuegen implements WindowListener{
 		JButton btnFertigstellen = new JButton("Fertig stellen");
 		btnFertigstellen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				windowClosing(new WindowEvent(frame,WindowEvent.WINDOW_CLOSING)); // TODO Kunden hinzufuegen
+				try {
+					con = SimpleQuery.connect();
+					String statement, daten;
+					if(aendern) {
+						statement = "update Kunden set ";
+						daten = getDataUpdate();
+					} else {
+						statement = "insert into Kunden values(";
+						daten = getDataInsert();
+
+					}
+					if(daten != null) { // statement nur ausführen, wenn auch Daten vorhanden sind
+						statement += daten;
+						System.out.println(statement);
+						PreparedStatement pst = con.prepareStatement(statement);
+						pst.executeUpdate();
+						windowClosing(new WindowEvent(frame,WindowEvent.WINDOW_CLOSING));
+					}
+				}catch(SQLException ex) {
+					ex.printStackTrace();
+				}
+				
 			}
 		});
 		btnFertigstellen.setBounds(300, 285, 226, 35);
@@ -149,7 +185,28 @@ public class GUIKundenHinzufuegen implements WindowListener{
 		textFieldHausnummer.setColumns(10);
 		textFieldHausnummer.setBounds(552, 170, 200, 25);
 		frame.getContentPane().add(textFieldHausnummer);
+		
+		lblPasswortUngueltig = new JLabel("Passwort ungueltig");
+		lblPasswortUngueltig.setForeground(Color.RED);
+		lblPasswortUngueltig.setBounds(161, 250, 139, 15);
+		frame.getContentPane().add(lblPasswortUngueltig);
 		frame.addWindowListener(this);
+		lblPasswortUngueltig.setVisible(false);
+		
+		// Wenn geaendert werden soll, Daten übernehmen
+		if(this.aendern && this.nummer != null) {
+			try {
+				frame.setTitle("Kunden ändern");
+				con = SimpleQuery.connect();
+				String statement = "Select * from Kunden where kundennummer=" + nummer;
+				PreparedStatement pst = con.prepareStatement(statement);
+				ResultSet rs = pst.executeQuery();
+				rs.next();
+				textFelderFuellen(rs);
+			}catch(SQLException ex) {
+				ex.printStackTrace();
+			}
+		}
 	}
 	
 	public JFrame getFrame() {
@@ -196,4 +253,96 @@ public class GUIKundenHinzufuegen implements WindowListener{
 		GUIKundenVerwalten oberflaeche = new GUIKundenVerwalten();
 		oberflaeche.getFrame().setVisible(true);
 	}
+	
+	// Setzt String aus allen Feldern für Einfuege-Statement zusammen
+		public String getDataInsert(){
+			lblPasswortUngueltig.setVisible(false);
+			// Prüfen, ob alle Textfelder Inhalt besitzen
+			 for (Component c : frame.getContentPane().getComponents()) {
+			     if (c instanceof JTextField) { 
+			        if(((JTextField)c).getText().trim().isEmpty()) {
+			        	return null;
+			        }
+			     }
+			 }
+			String daten = "NULL, \'" + textFieldVorname.getText() + "\',";
+			daten += "\'" + textFieldNachname.getText() + "\',";
+			String email = textFieldEmail.getText();
+            Matcher m = Intern.Person.email_regex.matcher(email);
+            if(m.matches()) {
+                   daten += "\'" + email + "\',";
+            } else {
+                   textFieldEmail.setText("Email ungültig");
+                   return null;
+            }
+			daten += textFieldAlter.getText() + ",";
+			daten += "0,";
+			String passwort = String.valueOf(passwordField.getPassword());
+            Matcher p = Intern.Kunde.anforderungen.matcher(passwort);
+            if(p.matches()) {
+            	daten += "PASSWORD(\'" + passwort + "\'),";
+            } else {
+            	lblPasswortUngueltig.setVisible(true);
+                return null;
+            }
+			daten += "\'" + textFieldPLZ.getText() + "\',";
+			daten += "\'" + textFieldOrt.getText() + "\',";
+			daten += "\'" + textFieldStrasse.getText() + "\',";
+			daten += "\'" + textFieldHausnummer.getText() + "\'";
+			daten += ")";
+			return daten;
+		}
+		
+		// Setzt String aus allen Feldern für Update-Statement zusammen
+		public String getDataUpdate() {
+			lblPasswortUngueltig.setVisible(false);
+			// Prüfen, ob alle Textfelder Inhalt besitzen
+			 for (Component c : frame.getContentPane().getComponents()) {
+			     if (c instanceof JTextField) { 
+			        if(((JTextField)c).getText().trim().isEmpty()) {
+			        	return null;
+			        }
+			     }
+			 }
+			String daten = "vorname=\'" + textFieldVorname.getText() + "\',";
+			daten += "nachname=\'" + textFieldNachname.getText() + "\',";
+			String email = textFieldEmail.getText();
+            Matcher m = Intern.Person.email_regex.matcher(email);
+            if(m.matches()) {
+                   daten += "email=\'" + email + "\',";
+            } else {
+                   textFieldEmail.setText("Email ungültig");
+                   return null;
+            }
+			daten += "`alter`=" + textFieldAlter.getText() + ",";
+			String passwort = String.valueOf(passwordField.getPassword());
+            Matcher p = Intern.Kunde.anforderungen.matcher(passwort);
+            if(p.matches()) {
+            	daten += "passwort=PASSWORD(\'" + passwort + "\'),";
+            } else {
+            	lblPasswortUngueltig.setVisible(true);
+                return null;
+            }
+			daten += "plz=\'" + textFieldPLZ.getText() + "\',";
+			daten += "ort=\'" + textFieldOrt.getText() + "\',";
+			daten += "strasse=\'" + textFieldStrasse.getText() + "\',";
+			daten += "hausnummer=\'" + textFieldHausnummer.getText() + "\'";
+			daten += " where kundennummer=" + nummer;
+			return daten;
+		}
+		
+		// Befuellt alle Felder in GUI
+		public void textFelderFuellen(ResultSet rs) throws SQLException{
+			int index = 2;
+			textFieldVorname.setText(rs.getString(index++));
+			textFieldNachname.setText(rs.getString(index++));
+			textFieldEmail.setText(rs.getString(index++));
+			textFieldAlter.setText(rs.getString(index++));
+			index++;
+			index++;
+			textFieldPLZ.setText(rs.getString(index++));
+			textFieldOrt.setText(rs.getString(index++));
+			textFieldStrasse.setText(rs.getString(index++));
+			textFieldHausnummer.setText(rs.getString(index++));
+		}
 }
