@@ -40,6 +40,9 @@ public class GUIMain implements WindowListener{
 	private TableRowSorter<TableModel> rowSorter;
 	private JLabel lblError;
 	
+	public static final double STRAFPREISDIGITAL = 0.1;
+	public static final double STRAFPREISBUECHER = 0.2;
+	
 	// Spaltennamen der Tabellen
 	static String[] columnNamesFilme = {"Art. Nr.",
 			"Kaufpreis", "Altersfreigabe", "Status",
@@ -116,10 +119,6 @@ public class GUIMain implements WindowListener{
 		btnKundenVerwalten.setBounds(24, 30, 226, 35);
 		frame.getContentPane().add(btnKundenVerwalten);
 		
-		JButton btnNewButton = new JButton("Exemplare mit Strafpreisen");
-		btnNewButton.setBounds(24, 91, 226, 35);
-		frame.getContentPane().add(btnNewButton);
-		
 		JButton btnVerleihen = new JButton("Verleihen");
 		btnVerleihen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -135,7 +134,7 @@ public class GUIMain implements WindowListener{
 						artikelnummern[i] = table.getModel().getValueAt(zeilen[i], 0).toString();
 					}
 					String kategorie = comboBoxKategorie.getSelectedItem().toString();
-					GUIKundenansicht g = new GUIKundenansicht(artikelnummern, kategorie);
+					GUIVerleihen g = new GUIVerleihen(artikelnummern, kategorie);
 					g.getFrame().setVisible(true);
 					try {
 						if(con!= null) con.close();
@@ -151,6 +150,18 @@ public class GUIMain implements WindowListener{
 		frame.getContentPane().add(btnVerleihen);
 		
 		JButton btnRuecknahme = new JButton("Rücknahme");
+		btnRuecknahme.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					if(con != null) con.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+				frame.dispose();
+				GUIRuecknahme medien = new GUIRuecknahme();
+				medien.getFrame().setVisible(true);
+			}
+		});
 		btnRuecknahme.setBounds(24, 273, 226, 35);
 		frame.getContentPane().add(btnRuecknahme);
 		
@@ -172,7 +183,7 @@ public class GUIMain implements WindowListener{
 				medien.getFrame().setVisible(true);
 			}
 		});
-		btnMedienVerwalten.setBounds(298, 30, 226, 35);
+		btnMedienVerwalten.setBounds(24, 93, 226, 35);
 		frame.getContentPane().add(btnMedienVerwalten);
 		
 		JScrollPane scrollPaneMedien = new JScrollPane();

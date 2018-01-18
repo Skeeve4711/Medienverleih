@@ -27,8 +27,9 @@ import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
+import javax.swing.JComboBox;
 
-public class GUIKundenansicht implements WindowListener{
+public class GUIVerleihen implements WindowListener{
 
 	private JFrame frame;
 	private Connection con;
@@ -37,6 +38,9 @@ public class GUIKundenansicht implements WindowListener{
 	private JPasswordField passwordField;
 	private String[] artikelnummern;
 	private String kategorie;
+	private JComboBox<String> comboBoxDauer;
+	private JLabel lblAlter;
+	private JLabel lblStrafpreis;
 
 	/**
 	 * Launch the application.
@@ -45,7 +49,7 @@ public class GUIKundenansicht implements WindowListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIKundenansicht window = new GUIKundenansicht(null,null);
+					GUIVerleihen window = new GUIVerleihen(null,null);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -57,7 +61,7 @@ public class GUIKundenansicht implements WindowListener{
 	/**
 	 * Create the application
 	 */
-	public GUIKundenansicht(String[] artikelnummern,String kategorie) {
+	public GUIVerleihen(String[] artikelnummern,String kategorie) {
 		this.artikelnummern = artikelnummern;
 		this.kategorie = kategorie;
 		initialize();
@@ -80,19 +84,58 @@ public class GUIKundenansicht implements WindowListener{
 			public void actionPerformed(ActionEvent e) {
 				if(table.getSelectedRow() != -1) {
 					String passwort = String.valueOf(passwordField.getPassword());
-					String statement = "select passwort from Kunden where kundennummer=" + table.getModel().getValueAt(table.getSelectedRow(), 0);
+					String kundennummer = table.getModel().getValueAt(table.getSelectedRow(), 0).toString();
+					String statement = "select passwort from Kunden where kundennummer=" + kundennummer;
 					statement += " and passwort=PASSWORD(\'" + passwort + "\')";
 					try {
-						PreparedStatement pst = con.prepareStatement(statement);
+						String sql = "select `alter` from Kunden where kundennummer=" + kundennummer;
+						PreparedStatement pst = con.prepareStatement(sql);
 						ResultSet rs = pst.executeQuery();
+						rs.next();
+						int alter = rs.getInt(1);
+						sql = "select altersfreigabe from " + kategorie + " where artikelnummer in(";
+						for(int i=0;i<artikelnummern.length;i++) {
+							sql += artikelnummern[i];
+							if(i < artikelnummern.length-1) sql += ",";
+						}
+						sql += ")";
+						pst = con.prepareStatement(sql);
+						boolean fehler = false;
+						rs = pst.executeQuery();
+						while(rs.next()) {
+							if(rs.getInt(1) > alter) {
+								fehler = true;
+								lblAlter.setVisible(true);
+							}
+						}
+						sql = "select strafpreis from Kunden where kundennummer=" + kundennummer;
+						pst = con.prepareStatement(sql);
+						rs = pst.executeQuery();
+						rs.next();
+						if(rs.getDouble(1) > 0) {
+							fehler = true;
+							lblStrafpreis.setVisible(true);
+						}
+						if(fehler) return;
+						pst = con.prepareStatement(statement);
+						rs = pst.executeQuery();
 						if(rs.next()) {
 							String upd = "update " + kategorie + " set status=0 where";
 							for(int i=0;i<artikelnummern.length;i++) {
 								upd += " artikelnummer=" + artikelnummern[i];
 								if(i < artikelnummern.length-1) upd += " or";
 							}
-							PreparedStatement pst2 = con.prepareStatement(upd); // TODO Historie
+							PreparedStatement pst2 = con.prepareStatement(upd);
 							pst2.executeUpdate();
+							int dauer = comboBoxDauer.getSelectedIndex() + 1;
+							String historie = "insert into Historie" + kategorie + " values";
+							for(int i=0;i<artikelnummern.length;i++) {
+								historie += " (" + kundennummer + "," + artikelnummern[i];
+								historie += ",UTC_DATE()," + dauer + ",NULL)";
+								if(i < artikelnummern.length -1) historie += ",";
+							}
+							PreparedStatement pst3 = con.prepareStatement(historie);
+							pst3.executeUpdate();
 						} else {
 							return;
 						}
@@ -191,8 +234,32 @@ public class GUIKundenansicht implements WindowListener{
 		frame.getContentPane().add(passwordField);
 		
 		JLabel lblPasswort = new JLabel("Passwort");
-		lblPasswort.setBounds(116, 72, 70, 15);
+		lblPasswort.setBounds(12, 104, 70, 15);
 		frame.getContentPane().add(lblPasswort);
+		
+		comboBoxDauer = new JComboBox<>();
+		comboBoxDauer.setBounds(91, 180, 117, 25);
+		frame.getContentPane().add(comboBoxDauer);
+		comboBoxDauer.addItem("1 Woche");
+		comboBoxDauer.addItem("2 Wochen");
+		comboBoxDauer.addItem("3 Wochen");
+		comboBoxDauer.addItem("4 Wochen");
+		
+		JLabel lblDauer = new JLabel("Dauer");
+		lblDauer.setBounds(12, 185, 70, 15);
+		frame.getContentPane().add(lblDauer);
+		
+		lblAlter = new JLabel("Nicht alt genug!");
+		lblAlter.setVisible(false);
+		lblAlter.setForeground(Color.RED);
+		lblAlter.setBounds(51, 232, 127, 15);
+		frame.getContentPane().add(lblAlter);
+		
+		lblStrafpreis = new JLabel("Strafpreis vorhanden");
+		lblStrafpreis.setVisible(false);
+		lblStrafpreis.setForeground(Color.RED);
+		lblStrafpreis.setBounds(51, 267, 157, 15);
+		frame.getContentPane().add(lblStrafpreis);
 	}
 	
 	public JFrame getFrame() {
