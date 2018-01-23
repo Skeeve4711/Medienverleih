@@ -26,20 +26,21 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.JLabel;
-import javax.swing.JPasswordField;
+import javax.swing.JComboBox;
 
-public class GUIVerkaufen implements WindowListener{
+public class GUIHistorie implements WindowListener{
 
 	private JFrame frame;
-	private Connection con;
+	public static Connection con;
 	private JTable table;
 	private JTextField textFieldSuche;
-	private JPasswordField passwordField;
-	private String[] artikelnummern;
-	private String kategorie;
-	private JLabel lblAlter;
-	private JLabel lblStrafpreis;
-
+	private JComboBox<String> comboBoxKategorie;
+	private JScrollPane scrollPaneMedien;
+	private JButton btnAnzeigen;
+	private JTable medien;
+	public static String kundennummer;
+	public static String kategorie;
+	
 	/**
 	 * Launch the application.
 	 */
@@ -47,7 +48,7 @@ public class GUIVerkaufen implements WindowListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIVerkaufen window = new GUIVerkaufen(null,null);
+					GUIHistorie window = new GUIHistorie();
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -59,9 +60,7 @@ public class GUIVerkaufen implements WindowListener{
 	/**
 	 * Create the application
 	 */
-	public GUIVerkaufen(String[] artikelnummern,String kategorie) {
-		this.artikelnummern = artikelnummern;
-		this.kategorie = kategorie;
+	public GUIHistorie() {
 		initialize();
 	}
 
@@ -69,73 +68,18 @@ public class GUIVerkaufen implements WindowListener{
 	 * Initialize the contents of the frame.
 	 */
 	private void initialize() {
-		frame = new JFrame();
+		frame = new JFrame("Historie");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
 		frame.getContentPane().setLayout(null);
 		frame.addWindowListener(this);
-		this.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
+		GUIHistorie.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
 		
-		// Schließt den Kaufvorgang ab
-		JButton btnFertigStellen = new JButton("Fertig Stellen");
+		// Schließt das Fenster
+		JButton btnFertigStellen = new JButton("Schliessen");
 		btnFertigStellen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(table.getSelectedRow() != -1) {
-					String passwort = String.valueOf(passwordField.getPassword());
-					String kundennummer = table.getModel().getValueAt(table.getSelectedRow(), 0).toString();
-					String statement = "select passwort from Kunden where kundennummer=" + kundennummer;
-					statement += " and passwort=PASSWORD(\'" + passwort + "\')";
 					try {
-						String sql = "select `alter` from Kunden where kundennummer=" + kundennummer;
-						PreparedStatement pst = con.prepareStatement(sql);
-						ResultSet rs = pst.executeQuery();
-						rs.next();
-						int alter = rs.getInt(1);
-						sql = "select altersfreigabe from " + kategorie + " where artikelnummer in(";
-						for(int i=0;i<artikelnummern.length;i++) {
-							sql += artikelnummern[i];
-							if(i < artikelnummern.length-1) sql += ",";
-						}
-						sql += ")";
-						pst = con.prepareStatement(sql);
-						boolean fehler = false;
-						rs = pst.executeQuery();
-						while(rs.next()) {
-							if(rs.getInt(1) > alter) {
-								fehler = true;
-								lblAlter.setVisible(true);
-							}
-						}
-						sql = "select strafpreis from Kunden where kundennummer=" + kundennummer;
-						pst = con.prepareStatement(sql);
-						rs = pst.executeQuery();
-						rs.next();
-						if(rs.getDouble(1) > 0) {
-							fehler = true;
-							lblStrafpreis.setVisible(true);
-						}
-						if(fehler) return;
-						pst = con.prepareStatement(statement);
-						rs = pst.executeQuery();
-						if(rs.next()) {
-							String upd = "update " + kategorie + " set status=1 where";
-							for(int i=0;i<artikelnummern.length;i++) {
-								upd += " artikelnummer=" + artikelnummern[i];
-								if(i < artikelnummern.length-1) upd += " or";
-							}
-							PreparedStatement pst2 = con.prepareStatement(upd);
-							pst2.executeUpdate();
-							String historie = "insert into Historie" + kategorie + " values";
-							for(int i=0;i<artikelnummern.length;i++) {
-								historie += " (" + kundennummer + "," + artikelnummern[i];
-								historie += ",UTC_DATE(),-1,\'2500-1-1\')";
-								if(i < artikelnummern.length -1) historie += ",";
-							}
-							PreparedStatement pst3 = con.prepareStatement(historie);
-							pst3.executeUpdate();
-						} else {
-							return;
-						}
 						if(con != null) {
 							con.close();
 						}
@@ -147,35 +91,34 @@ public class GUIVerkaufen implements WindowListener{
 					g.getFrame().setVisible(true);
 		        	g.getError().setForeground(Color.GREEN);;
 		        	g.getError().setText("Erfolg");
-				}
 			}
 		});
-		btnFertigStellen.setBounds(29, 317, 200, 25);
+		btnFertigStellen.setBounds(501, 315, 200, 25);
 		frame.getContentPane().add(btnFertigStellen);
 		
 		JScrollPane scrollPaneKunden = new JScrollPane();
-		scrollPaneKunden.setBounds(242, 56, 1038, 226);
+		scrollPaneKunden.setBounds(263, 56, 320, 226);
 		frame.getContentPane().add(scrollPaneKunden);
 		try {
 			PreparedStatement anz = con.prepareStatement("select count(*) from Kunden");
 			ResultSet anzahl = anz.executeQuery();
 			anzahl.next();
 			int zeilenanzahl = anzahl.getInt(1);
-			PreparedStatement pst = con.prepareStatement("select * from Kunden");
+			PreparedStatement pst = con.prepareStatement("select kundennummer,vorname,nachname from Kunden");
 		    ResultSet rs = pst.executeQuery();
-		    int spaltenanzahl = GUIMain.columnNamesKunden.length;
+		    int spaltenanzahl = 3;
 		    String data[][] = new String[zeilenanzahl][spaltenanzahl];
 		    int indexA = 0;
 		    while(rs.next()) {
-			    for(int i=1;i<spaltenanzahl+2;i++) {
-			    	if(i < 7) data[indexA][i-1] = rs.getString(i);
-			    	else if(i > 7) data[indexA][i-2] = rs.getString(i);
+			    for(int i=1;i<spaltenanzahl+1;i++) {
+			    	data[indexA][i-1] = rs.getString(i);
 			    }
 		    	indexA++;
 		    }	
 			TableColumn column = null;
-			table = new JTable(data,GUIMain.columnNamesKunden);
-			for (int i = 0; i < spaltenanzahl-1; i++) {
+			String spaltenKunden[] = {"Kunden Nr.","Vorname","Nachname"};
+			table = new JTable(data,spaltenKunden);
+			for (int i = 0; i < spaltenanzahl; i++) {
 			    column = table.getColumnModel().getColumn(i);
 			    column.setPreferredWidth(120);
 			}
@@ -226,25 +169,79 @@ public class GUIVerkaufen implements WindowListener{
 		frame.getContentPane().add(textFieldSuche);
 		textFieldSuche.setColumns(10);
 		
-		passwordField = new JPasswordField();
-		passwordField.setBounds(91, 99, 117, 25);
-		frame.getContentPane().add(passwordField);
+		comboBoxKategorie = new JComboBox<>();
+		comboBoxKategorie.setBounds(91, 29, 117, 25);
+		frame.getContentPane().add(comboBoxKategorie);
+		comboBoxKategorie.addItem("Filme");
+		comboBoxKategorie.addItem("Buecher");
+		comboBoxKategorie.addItem("Videospiele");
 		
-		JLabel lblPasswort = new JLabel("Passwort");
-		lblPasswort.setBounds(12, 104, 70, 15);
-		frame.getContentPane().add(lblPasswort);
+		JLabel lblDauer = new JLabel("Kategorie");
+		lblDauer.setBounds(12, 34, 70, 15);
+		frame.getContentPane().add(lblDauer);
 		
-		lblAlter = new JLabel("Nicht alt genug!");
-		lblAlter.setVisible(false);
-		lblAlter.setForeground(Color.RED);
-		lblAlter.setBounds(51, 232, 127, 15);
-		frame.getContentPane().add(lblAlter);
+		scrollPaneMedien = new JScrollPane();
+		scrollPaneMedien.setBounds(595, 56, 685, 226);
+		frame.getContentPane().add(scrollPaneMedien);
 		
-		lblStrafpreis = new JLabel("Strafpreis vorhanden");
-		lblStrafpreis.setVisible(false);
-		lblStrafpreis.setForeground(Color.RED);
-		lblStrafpreis.setBounds(51, 267, 157, 15);
-		frame.getContentPane().add(lblStrafpreis);
+		// Button, um ausgeliehene Medien eines Kunden anzuzeigen
+		btnAnzeigen = new JButton("Anzeigen");
+		btnAnzeigen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+		          int row = table.getSelectedRow();
+		          if(row != -1) {
+			          try {
+			        	  kategorie = comboBoxKategorie.getSelectedItem().toString();
+			        	  String tabellenname = "Historie" + kategorie;
+			        	  String statement = "select " + kategorie + ".artikelnummer,"  + kategorie + ".erscheinungsdatum, "   + kategorie + ".titel,";
+			        	  statement += tabellenname + ".ausleihdatum,DATEDIFF(IFNULL(" + tabellenname + ".rueckgabedatum,UTC_DATE())," +  tabellenname + ".ausleihdatum)," +  tabellenname + ".rueckgabedatum";
+			        	  statement += " from " + kategorie + " join " + tabellenname + " on " + kategorie + ".artikelnummer=" + tabellenname + ".artikelnummer ";
+			        	  statement += " where kundennummer=" + table.getModel().getValueAt(row, 0);
+			        	  statement += " order by " + tabellenname + ".ausleihdatum";
+			        	  PreparedStatement pst = con.prepareStatement(statement);
+			        	  ResultSet rs = pst.executeQuery();
+			        	  while(!rs.isLast() && rs.next());
+			        	  int zeilenanzahl = rs.getRow();
+			        	  rs.beforeFirst();
+			        	  String data[][];
+			        	  if(zeilenanzahl > 0) {
+			        		  data = new String[zeilenanzahl][GUIMain.columnNamesHistorie.length];
+				  		      int indexA = 0;
+				  		      while(rs.next()) {
+				  		    	  	for(int i=1;i<GUIMain.columnNamesHistorie.length;i++) {
+				  		    	  		if(i == 5) {
+				  		    	  			String temp = rs.getString(i);
+				  		    	  			if( temp == null) {
+				  		    	  				data[indexA][GUIMain.columnNamesHistorie.length-1] = "Verliehen";
+				  		    	  				data[indexA][i-1] = rs.getString(i) + " Tage";
+				  		    	  			} else if(Integer.parseInt(temp) > 100000){
+				  		    	  				data[indexA][GUIMain.columnNamesHistorie.length-1] = "Verkauft";
+				  		    	  				data[indexA][i-1] = "Unendlich";
+				  		    	  				i++;
+				  		    	  				data[indexA][i-1] = "Nie";
+				  		    	  			} else {
+				  		    	  			data[indexA][GUIMain.columnNamesHistorie.length-1] = "Zurückgegeben";
+			  		    	  				data[indexA][i-1] = rs.getString(i) + " Tage";
+				  		    	  			}
+				  		    	  		} else data[indexA][i-1] = rs.getString(i);
+				  		    	  		
+				  		    	  	}
+				  		    		indexA++;
+				  		      }
+					  		  medien = new JTable(data,GUIMain.columnNamesHistorie);
+					  		  scrollPaneMedien.setViewportView(medien);
+
+			  		      } else {
+			  		    	  scrollPaneMedien.setViewportView(null);
+			  		      }
+			          } catch(SQLException el) {
+			        	  el.printStackTrace();
+			          }
+		          }
+			}
+		});
+		btnAnzeigen.setBounds(29, 66, 200, 25);
+		frame.getContentPane().add(btnAnzeigen);
 	}
 	
 	public JFrame getFrame() {
@@ -290,7 +287,7 @@ public class GUIVerkaufen implements WindowListener{
 		frame.dispose();
 		try {
 			if(con != null) {
-				this.con.close();
+				GUIRuecknahme.con.close();
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();

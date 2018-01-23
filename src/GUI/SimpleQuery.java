@@ -26,7 +26,6 @@ public class SimpleQuery {
 	     try {  
 		    String url = "jdbc:mysql://"+hostname+":"+port+"/"+dbname; 
 		    con = DriverManager.getConnection(url, user, password); 
-		   
 		    
 	     } 
 	     catch (SQLException sqle) { 

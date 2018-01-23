@@ -29,6 +29,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 
 public class GUIMedienVerwalten implements WindowListener{
 
@@ -37,6 +38,7 @@ public class GUIMedienVerwalten implements WindowListener{
 	private boolean bestaetigt;
 	private ArrayList<String> nummern;
 	private TableRowSorter<TableModel> rowSorter;
+	private JLabel lblLager;
 	
 	private JFrame frame;
 	private JTable table;
@@ -82,6 +84,12 @@ public class GUIMedienVerwalten implements WindowListener{
 		frame.addWindowListener(this);
 		con = SimpleQuery.connect();
 		
+		lblLager = new JLabel("Nicht auf Lager!");
+		lblLager.setForeground(Color.RED);
+		lblLager.setBounds(57, 261, 149, 15);
+		lblLager.setVisible(false);
+		frame.getContentPane().add(lblLager);
+		
 		// Medium Hinzufuegen Fenster oeffnen
 		JButton btnHinzufuegen = new JButton("Hinzufügen");
 		btnHinzufuegen.addActionListener(new ActionListener() {
@@ -104,19 +112,23 @@ public class GUIMedienVerwalten implements WindowListener{
 		btnAusschliessen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int zeile = table.getSelectedRow();
-					if(zeile != -1) {
-						frame.dispose();
-						try {
-							if(con != null) {
-								con.close();
-							}
-						} catch (SQLException ex) {
-							ex.printStackTrace();
+						if(zeile != -1) {
+							if(table.getModel().getValueAt(zeile, 3).equals("Auf Lager")) {
+								frame.dispose();
+								try {
+									if(con != null) {
+										con.close();
+									}
+								} catch (SQLException ex) {
+									ex.printStackTrace();
+								}
+								String kategorie = comboBoxKategorie.getSelectedItem().toString();
+								String nummer = table.getModel().getValueAt(zeile, 0).toString();
+								GUIBestaetigenMedienVerwalten bestaetigung = new GUIBestaetigenMedienVerwalten(nummer, kategorie);
+								bestaetigung.getFrame().setVisible(true);
+						} else {
+							lblLager.setVisible(true);
 						}
-						String kategorie = comboBoxKategorie.getSelectedItem().toString();
-						String nummer = table.getModel().getValueAt(zeile, 0).toString();
-						GUIBestaetigenMedienVerwalten bestaetigung = new GUIBestaetigenMedienVerwalten(nummer, kategorie);
-						bestaetigung.getFrame().setVisible(true);
 					}
 			}
 		});
@@ -149,10 +161,11 @@ public class GUIMedienVerwalten implements WindowListener{
 		scrollPaneMedien.setBounds(290, 87, 978, 245);
 		frame.getContentPane().add(scrollPaneMedien);
 		
+
+		
 		// Medium ausschliessen
 		if(this.bestaetigt) {
 			String sql = "update " + kategorie + " set status=2 where artikelnummer=" + this.nummer;
-			System.out.println(sql);
 			try {
 				PreparedStatement pst = con.prepareStatement(sql);
 				pst.executeUpdate();
@@ -326,6 +339,30 @@ public class GUIMedienVerwalten implements WindowListener{
 		textFieldError.setBounds(913, 35, 100, 25);
 		frame.getContentPane().add(textFieldError);
 		textFieldError.setColumns(10);
+		
+		JButton buttonHistorie = new JButton("Historie anzeigen");
+		buttonHistorie.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int zeile = table.getSelectedRow();
+				if(zeile != -1) {
+					GUIHistorieMedium.artikelnummer = table.getModel().getValueAt(zeile, 0).toString();
+					GUIHistorieMedium.kategorie = comboBoxKategorie.getSelectedItem().toString();
+					try {
+						con.close();
+					} catch (SQLException ex) {
+						ex.printStackTrace();
+					}
+					String nummer = table.getModel().getValueAt(zeile, 0).toString();
+					String kategorie = comboBoxKategorie.getSelectedItem().toString();
+					GUIHistorieMedium historie = new GUIHistorieMedium();
+					historie.getFrame().setVisible(true);
+					frame.dispose();
+				}
+				
+			}
+		});
+		buttonHistorie.setBounds(24, 200, 226, 35);
+		frame.getContentPane().add(buttonHistorie);
 		
 
 	}

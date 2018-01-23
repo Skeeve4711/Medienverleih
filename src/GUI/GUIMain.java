@@ -1,11 +1,13 @@
 package GUI;
 import java.awt.EventQueue;
+import java.awt.Image;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import java.awt.Dimension;
 
+import javax.swing.JApplet;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -19,6 +21,8 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 
+import com.sun.corba.se.impl.ior.GenericTaggedComponent;
+
 import javax.swing.JTable;
 import javax.swing.JComboBox;
 import javax.swing.JTextField;
@@ -28,7 +32,11 @@ import javax.swing.event.DocumentListener;
 import javax.swing.event.TableModelEvent;
 import javax.swing.event.TableModelListener;
 import javax.swing.JLabel;
-import java.awt.Color; 
+import javax.swing.JLayeredPane;
+
+import java.awt.Color;
+import javax.swing.ImageIcon;
+import javax.swing.SwingConstants; 
 
 public class GUIMain implements WindowListener{
 
@@ -62,6 +70,10 @@ public class GUIMain implements WindowListener{
 			"Alter", "Strafpreis",
 			"PLZ", "Ort", "Straße",
 			"Haus Nr."};
+	static String[] columnNamesHistorie = {"Art. Nr.", "Erscheinungsdatum", "Titel",
+				"Leihdatum", "Leihdauer", "Rückgabedatum", "Status"};
+	static String[] columnNamesHistorieMedium = {"Kundennummer.", "Erscheinungsdatum", "Titel",
+			"Leihdatum", "Leihdauer", "Rückgabedatum", "Status"};
 	
 	private ArrayList<String> nummern;
 	private JTextField textFieldError;
@@ -101,6 +113,7 @@ public class GUIMain implements WindowListener{
 		frame.getContentPane().setLayout(null);
 		frame.addWindowListener(this);
 		this.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
+		frame.setLayeredPane(new JLayeredPane());
 		
 		//Strafpreise bei Start berechnen
 		try {
@@ -247,11 +260,18 @@ public class GUIMain implements WindowListener{
 		scrollPaneMedien.setBounds(298, 77, 982, 277);
 		frame.getContentPane().add(scrollPaneMedien);
 		
+		JLabel lblNewLabel = new JLabel("");
+		lblNewLabel.setVerticalAlignment(SwingConstants.BOTTOM);
+		lblNewLabel.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Filme.jpg"));
+		lblNewLabel.setBounds(0, 0, 1300, 400);
+		frame.getContentPane().add(lblNewLabel);
+		
 		// Feld zur Auswahl der Kategorie
 		comboBoxKategorie = new JComboBox<>();
 		comboBoxKategorie.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				String kategorie = comboBoxKategorie.getSelectedItem().toString();
+				lblNewLabel.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/" + kategorie + ".jpg"));
 				try {
 					PreparedStatement anz = con.prepareStatement("select count(*) from " + kategorie);
 					ResultSet anzahl = anz.executeQuery();
@@ -394,6 +414,7 @@ public class GUIMain implements WindowListener{
 		textFieldSuche.setColumns(10);
 		
 		JLabel lblSuche = new JLabel("Suche");
+		lblSuche.setForeground(Color.WHITE);
 		lblSuche.setBounds(840, 40, 43, 15);
 		frame.getContentPane().add(lblSuche);
 		
@@ -406,8 +427,25 @@ public class GUIMain implements WindowListener{
 		lblError = new JLabel("Medium ist nicht auf Lager!");
 		lblError.setVisible(false);
 		lblError.setForeground(Color.RED);
-		lblError.setBounds(24, 164, 208, 15);
+		lblError.setBounds(42, 199, 208, 15);
 		frame.getContentPane().add(lblError);
+		
+		// Öffnet Fenster für die Historie
+		JButton buttonHistorie = new JButton("Historie anzeigen");
+		buttonHistorie.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					if(con != null) con.close();
+				} catch (SQLException e1) {
+					e1.printStackTrace();
+				}
+				frame.dispose();
+				GUIHistorie historie = new GUIHistorie();
+				historie.getFrame().setVisible(true);
+			}
+		});
+		buttonHistorie.setBounds(24, 152, 226, 35);
+		frame.getContentPane().add(buttonHistorie);
 	}
 	
 	public JFrame getFrame() {
