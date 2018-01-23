@@ -10,12 +10,14 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import javax.swing.JFrame;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 import javax.swing.JScrollPane;
 import javax.swing.JTable;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JTextField;
 import javax.swing.RowFilter;
 import javax.swing.event.DocumentEvent;
@@ -67,15 +69,21 @@ public class GUIKundenVerwalten implements WindowListener{
 		frame = new JFrame("Kunden verwalten");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
-		frame.getContentPane().setLayout(null);
+		frame.getLayeredPane().setLayout(null);
 		frame.addWindowListener(this);
+		frame.setLayeredPane(new JLayeredPane());
 		con = SimpleQuery.connect(); // Verbindung zur Datenbank herstellen
+		
+		JLabel lblNewLabel2 = new JLabel("");
+		lblNewLabel2.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Wurm.jpg"));
+		lblNewLabel2.setBounds(1225, 0, 75, 64);
+		frame.getLayeredPane().add(lblNewLabel2, new Integer(1));
 		
 		lblKunde = new JLabel("Kunde hat noch Sachen ausgeliehen!");
 		lblKunde.setVisible(false);
 		lblKunde.setForeground(Color.RED);
 		lblKunde.setBounds(12, 225, 275, 15);
-		frame.getContentPane().add(lblKunde);
+		frame.getLayeredPane().add(lblKunde, new Integer(1));
 		
 		if(this.entfernen) {
 			try {
@@ -128,7 +136,7 @@ public class GUIKundenVerwalten implements WindowListener{
 			}
 		});
 		btnHinzufuegen.setBounds(24, 30, 226, 35);
-		frame.getContentPane().add(btnHinzufuegen);
+		frame.getLayeredPane().add(btnHinzufuegen, new Integer(1));
 		
 		// Kunden entfernen und Bestaetigung abfragen
 		JButton btnEntfernen = new JButton("Entfernen");
@@ -149,7 +157,7 @@ public class GUIKundenVerwalten implements WindowListener{
 			}
 		});
 		btnEntfernen.setBounds(24, 87, 226, 35);
-		frame.getContentPane().add(btnEntfernen);
+		frame.getLayeredPane().add(btnEntfernen, new Integer(1));
 		
 		// Ausgewählten Kunden bearbeiten
 		JButton btnaendern = new JButton("Ändern");
@@ -170,11 +178,11 @@ public class GUIKundenVerwalten implements WindowListener{
 			}
 		});
 		btnaendern.setBounds(24, 144, 226, 35);
-		frame.getContentPane().add(btnaendern);
+		frame.getLayeredPane().add(btnaendern, new Integer(1));
 		
 		JScrollPane scrollPaneKunden = new JScrollPane();
 		scrollPaneKunden.setBounds(290, 84, 990, 248);
-		frame.getContentPane().add(scrollPaneKunden);
+		frame.getLayeredPane().add(scrollPaneKunden, new Integer(1));
 		
 		// Fenster schliessen und zum Hauptfenster zurückkehren
 		JButton btnFertigStellen = new JButton("Fertig stellen");
@@ -184,11 +192,11 @@ public class GUIKundenVerwalten implements WindowListener{
 			}
 		});
 		btnFertigStellen.setBounds(24, 297, 226, 35);
-		frame.getContentPane().add(btnFertigStellen);
+		frame.getLayeredPane().add(btnFertigStellen, new Integer(1));
 		
 		JLabel lblSuche = new JLabel("Suche");
 		lblSuche.setBounds(354, 40, 70, 15);
-		frame.getContentPane().add(lblSuche);
+		frame.getLayeredPane().add(lblSuche, new Integer(1));
 		
 		try {
 			PreparedStatement anz = con.prepareStatement("select count(*) from Kunden");
@@ -254,7 +262,7 @@ public class GUIKundenVerwalten implements WindowListener{
 
         });
 		textFieldSuche.setBounds(421, 35, 200, 25);
-		frame.getContentPane().add(textFieldSuche);
+		frame.getLayeredPane().add(textFieldSuche, new Integer(1));
 		textFieldSuche.setColumns(10);
 	}
 	

@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
@@ -26,6 +27,7 @@ import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JComboBox;
 
 public class GUIHistorie implements WindowListener{
@@ -71,9 +73,20 @@ public class GUIHistorie implements WindowListener{
 		frame = new JFrame("Historie");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
-		frame.getContentPane().setLayout(null);
+		frame.getLayeredPane().setLayout(null);
 		frame.addWindowListener(this);
+		frame.setLayeredPane(new JLayeredPane());
 		GUIHistorie.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
+		
+		JLabel lblNewLabel = new JLabel("");
+		lblNewLabel.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Historie.jpg"));
+		lblNewLabel.setBounds(0, 0, 1300, 375);
+		frame.getLayeredPane().add(lblNewLabel);
+		
+		JLabel lblNewLabel2 = new JLabel("");
+		lblNewLabel2.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Historie.jpg"));
+		lblNewLabel2.setBounds(650, 0, 1300, 375);
+		frame.getLayeredPane().add(lblNewLabel2);
 		
 		// Schließt das Fenster
 		JButton btnFertigStellen = new JButton("Schliessen");
@@ -94,11 +107,11 @@ public class GUIHistorie implements WindowListener{
 			}
 		});
 		btnFertigStellen.setBounds(501, 315, 200, 25);
-		frame.getContentPane().add(btnFertigStellen);
+		frame.getLayeredPane().add(btnFertigStellen, new Integer(1));
 		
 		JScrollPane scrollPaneKunden = new JScrollPane();
 		scrollPaneKunden.setBounds(263, 56, 320, 226);
-		frame.getContentPane().add(scrollPaneKunden);
+		frame.getLayeredPane().add(scrollPaneKunden, new Integer(1));
 		try {
 			PreparedStatement anz = con.prepareStatement("select count(*) from Kunden");
 			ResultSet anzahl = anz.executeQuery();
@@ -128,8 +141,9 @@ public class GUIHistorie implements WindowListener{
 		}
 		
 		JLabel lblSuche = new JLabel("Suche");
+		lblSuche.setForeground(Color.WHITE);
 		lblSuche.setBounds(386, 17, 70, 15);
-		frame.getContentPane().add(lblSuche);
+		frame.getLayeredPane().add(lblSuche, new Integer(1));
 		
 		// Feld, um in allen Spalten zu suchen
 		textFieldSuche = new JTextField();
@@ -166,23 +180,23 @@ public class GUIHistorie implements WindowListener{
 
         });
 		textFieldSuche.setBounds(453, 12, 200, 25);
-		frame.getContentPane().add(textFieldSuche);
+		frame.getLayeredPane().add(textFieldSuche, new Integer(1));
 		textFieldSuche.setColumns(10);
 		
 		comboBoxKategorie = new JComboBox<>();
 		comboBoxKategorie.setBounds(91, 29, 117, 25);
-		frame.getContentPane().add(comboBoxKategorie);
+		frame.getLayeredPane().add(comboBoxKategorie, new Integer(1));
 		comboBoxKategorie.addItem("Filme");
 		comboBoxKategorie.addItem("Buecher");
 		comboBoxKategorie.addItem("Videospiele");
 		
 		JLabel lblDauer = new JLabel("Kategorie");
 		lblDauer.setBounds(12, 34, 70, 15);
-		frame.getContentPane().add(lblDauer);
+		frame.getLayeredPane().add(lblDauer);
 		
 		scrollPaneMedien = new JScrollPane();
 		scrollPaneMedien.setBounds(595, 56, 685, 226);
-		frame.getContentPane().add(scrollPaneMedien);
+		frame.getLayeredPane().add(scrollPaneMedien, new Integer(1));
 		
 		// Button, um ausgeliehene Medien eines Kunden anzuzeigen
 		btnAnzeigen = new JButton("Anzeigen");
@@ -241,7 +255,7 @@ public class GUIHistorie implements WindowListener{
 			}
 		});
 		btnAnzeigen.setBounds(29, 66, 200, 25);
-		frame.getContentPane().add(btnAnzeigen);
+		frame.getLayeredPane().add(btnAnzeigen, new Integer(1));
 	}
 	
 	public JFrame getFrame() {

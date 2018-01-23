@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
@@ -25,6 +26,8 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
+
 import java.awt.Color;
 import java.awt.Font;
 
@@ -68,8 +71,9 @@ public class GUIHistorieMedium implements WindowListener{
 		frame = new JFrame("Historie");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
-		frame.getContentPane().setLayout(null);
+		frame.getLayeredPane().setLayout(null);
 		frame.addWindowListener(this);
+		frame.setLayeredPane(new JLayeredPane());
 		GUIHistorieMedium.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
 		
 		JLabel lblHistorie = new JLabel("Keine Historie vorhanden");
@@ -77,7 +81,7 @@ public class GUIHistorieMedium implements WindowListener{
 		lblHistorie.setFont(new Font("Dialog", Font.BOLD, 30));
 		lblHistorie.setForeground(Color.RED);
 		lblHistorie.setBounds(436, 8, 484, 36);
-		frame.getContentPane().add(lblHistorie);
+		frame.getLayeredPane().add(lblHistorie);
 		
 		// Schließt das Fenster
 		JButton btnFertigStellen = new JButton("Schliessen");
@@ -96,17 +100,28 @@ public class GUIHistorieMedium implements WindowListener{
 			}
 		});
 		btnFertigStellen.setBounds(527, 316, 200, 25);
-		frame.getContentPane().add(btnFertigStellen);
+		frame.getLayeredPane().add(btnFertigStellen);
 		
 	
 		
 		JLabel lblSuche = new JLabel("Suche");
+		lblSuche.setForeground(Color.WHITE);
 		lblSuche.setBounds(386, 17, 70, 15);
-		frame.getContentPane().add(lblSuche);
+		frame.getLayeredPane().add(lblSuche);
 		
 		scrollPaneMedien = new JScrollPane();
 		scrollPaneMedien.setBounds(27, 56, 1253, 226);
-		frame.getContentPane().add(scrollPaneMedien);
+		frame.getLayeredPane().add(scrollPaneMedien, new Integer(1));
+		
+		JLabel lblNewLabel = new JLabel("");
+		lblNewLabel.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Historie.jpg"));
+		lblNewLabel.setBounds(0, 0, 1300, 375);
+		frame.getLayeredPane().add(lblNewLabel);
+		
+		JLabel lblNewLabel2 = new JLabel("");
+		lblNewLabel2.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Historie.jpg"));
+		lblNewLabel2.setBounds(650, 0, 1300, 375);
+		frame.getLayeredPane().add(lblNewLabel2);
 		
 
 		
@@ -196,7 +211,7 @@ public class GUIHistorieMedium implements WindowListener{
 	
 	        });
 			textFieldSuche.setBounds(453, 12, 200, 25);
-			frame.getContentPane().add(textFieldSuche);
+			frame.getLayeredPane().add(textFieldSuche, new Integer(1));
 			textFieldSuche.setColumns(10);
 		}
 	}

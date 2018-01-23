@@ -1,13 +1,11 @@
 package GUI;
 import java.awt.EventQueue;
-import java.awt.Image;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import java.awt.Dimension;
 
-import javax.swing.JApplet;
 import javax.swing.JButton;
 import java.awt.event.ActionListener;
 import java.awt.event.WindowEvent;
@@ -20,8 +18,6 @@ import java.util.ArrayList;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
-
-import com.sun.corba.se.impl.ior.GenericTaggedComponent;
 
 import javax.swing.JTable;
 import javax.swing.JComboBox;
@@ -36,7 +32,6 @@ import javax.swing.JLayeredPane;
 
 import java.awt.Color;
 import javax.swing.ImageIcon;
-import javax.swing.SwingConstants; 
 
 public class GUIMain implements WindowListener{
 
@@ -46,7 +41,7 @@ public class GUIMain implements WindowListener{
 	private JTextField textFieldSuche;
 	private JComboBox<String> comboBoxKategorie;
 	private TableRowSorter<TableModel> rowSorter;
-	private JLabel lblError;
+	private JTextField lblError;
 	
 	public static final double STRAFPREISDIGITAL = 0.1;
 	public static final double STRAFPREISBUECHER = 0.2;
@@ -110,7 +105,7 @@ public class GUIMain implements WindowListener{
 		frame = new JFrame("Medienverleih");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
-		frame.getContentPane().setLayout(null);
+		frame.getLayeredPane().setLayout(null);
 		frame.addWindowListener(this);
 		this.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
 		frame.setLayeredPane(new JLayeredPane());
@@ -162,7 +157,7 @@ public class GUIMain implements WindowListener{
 			}
 		});
 		btnKundenVerwalten.setBounds(24, 30, 226, 35);
-		frame.getContentPane().add(btnKundenVerwalten);
+		frame.getLayeredPane().add(btnKundenVerwalten);
 		
 		JButton btnVerleihen = new JButton("Verleihen");
 		btnVerleihen.addActionListener(new ActionListener() {
@@ -192,7 +187,7 @@ public class GUIMain implements WindowListener{
 			}
 		});
 		btnVerleihen.setBounds(24, 226, 226, 35);
-		frame.getContentPane().add(btnVerleihen);
+		frame.getLayeredPane().add(btnVerleihen);
 		
 		JButton btnRuecknahme = new JButton("Rücknahme");
 		btnRuecknahme.addActionListener(new ActionListener() {
@@ -208,7 +203,7 @@ public class GUIMain implements WindowListener{
 			}
 		});
 		btnRuecknahme.setBounds(24, 273, 226, 35);
-		frame.getContentPane().add(btnRuecknahme);
+		frame.getLayeredPane().add(btnRuecknahme);
 		
 		JButton btnVerkaufen = new JButton("Verkaufen");
 		btnVerkaufen.addActionListener(new ActionListener() {
@@ -237,7 +232,7 @@ public class GUIMain implements WindowListener{
 			}
 		});
 		btnVerkaufen.setBounds(24, 320, 226, 35);
-		frame.getContentPane().add(btnVerkaufen);
+		frame.getLayeredPane().add(btnVerkaufen);
 		
 		// Medien verwalten Fenster öffnen
 		JButton btnMedienVerwalten = new JButton("Medien verwalten");
@@ -254,17 +249,21 @@ public class GUIMain implements WindowListener{
 			}
 		});
 		btnMedienVerwalten.setBounds(24, 93, 226, 35);
-		frame.getContentPane().add(btnMedienVerwalten);
+		frame.getLayeredPane().add(btnMedienVerwalten);
 		
 		JScrollPane scrollPaneMedien = new JScrollPane();
 		scrollPaneMedien.setBounds(298, 77, 982, 277);
-		frame.getContentPane().add(scrollPaneMedien);
+		frame.getLayeredPane().add(scrollPaneMedien);
 		
 		JLabel lblNewLabel = new JLabel("");
-		lblNewLabel.setVerticalAlignment(SwingConstants.BOTTOM);
 		lblNewLabel.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Filme.jpg"));
 		lblNewLabel.setBounds(0, 0, 1300, 400);
-		frame.getContentPane().add(lblNewLabel);
+		frame.getLayeredPane().add(lblNewLabel);
+		
+		JLabel lblNewLabel2 = new JLabel("");
+		lblNewLabel2.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Wurm.jpg"));
+		lblNewLabel2.setBounds(1225, 0, 75, 64);
+		frame.getLayeredPane().add(lblNewLabel2, new Integer(1));
 		
 		// Feld zur Auswahl der Kategorie
 		comboBoxKategorie = new JComboBox<>();
@@ -375,7 +374,7 @@ public class GUIMain implements WindowListener{
 		comboBoxKategorie.addItem("Buecher");
 		comboBoxKategorie.addItem("Videospiele");
 		comboBoxKategorie.setBounds(565, 35, 200, 25);
-		frame.getContentPane().add(comboBoxKategorie);
+		frame.getLayeredPane().add(comboBoxKategorie, new Integer(1));
 		
 		// Feld, um in allen Spalten zu suchen
 		textFieldSuche = new JTextField();
@@ -410,25 +409,28 @@ public class GUIMain implements WindowListener{
 
         });
 		textFieldSuche.setBounds(895, 35, 200, 25);
-		frame.getContentPane().add(textFieldSuche);
+		frame.getLayeredPane().add(textFieldSuche, new Integer(1));
 		textFieldSuche.setColumns(10);
 		
-		JLabel lblSuche = new JLabel("Suche");
-		lblSuche.setForeground(Color.WHITE);
+		JTextField lblSuche = new JTextField("Suche");
+		lblSuche.setEditable(false);
+		lblSuche.setForeground(Color.BLACK);
 		lblSuche.setBounds(840, 40, 43, 15);
-		frame.getContentPane().add(lblSuche);
+		frame.getLayeredPane().add(lblSuche,new Integer(1));
 		
 		textFieldError = new JTextField();
 		textFieldError.setEditable(false);
 		textFieldError.setColumns(10);
 		textFieldError.setBounds(1146, 35, 100, 25);
-		frame.getContentPane().add(textFieldError);
+		frame.getLayeredPane().add(textFieldError, new Integer(1));
 		
-		lblError = new JLabel("Medium ist nicht auf Lager!");
+		lblError = new JTextField("Medium ist nicht auf Lager!");
+		lblError.setEditable(false);
 		lblError.setVisible(false);
 		lblError.setForeground(Color.RED);
-		lblError.setBounds(42, 199, 208, 15);
-		frame.getContentPane().add(lblError);
+		lblError.setBackground(Color.WHITE);
+		lblError.setBounds(42, 199, 175, 15);
+		frame.getLayeredPane().add(lblError, new Integer(1));
 		
 		// Öffnet Fenster für die Historie
 		JButton buttonHistorie = new JButton("Historie anzeigen");
@@ -445,7 +447,7 @@ public class GUIMain implements WindowListener{
 			}
 		});
 		buttonHistorie.setBounds(24, 152, 226, 35);
-		frame.getContentPane().add(buttonHistorie);
+		frame.getLayeredPane().add(buttonHistorie, new Integer(1));
 	}
 	
 	public JFrame getFrame() {

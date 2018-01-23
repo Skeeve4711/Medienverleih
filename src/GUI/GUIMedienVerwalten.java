@@ -12,6 +12,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import javax.swing.JFrame;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JComboBox;
 
@@ -80,15 +81,26 @@ public class GUIMedienVerwalten implements WindowListener{
 		frame = new JFrame("Medien verwalten");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
-		frame.getContentPane().setLayout(null);
+		frame.getLayeredPane().setLayout(null);
 		frame.addWindowListener(this);
+		frame.setLayeredPane(new JLayeredPane());
 		con = SimpleQuery.connect();
+		
+		JLabel lblNewLabel = new JLabel("");
+		lblNewLabel.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Filme.jpg"));
+		lblNewLabel.setBounds(0, 0, 1300, 400);
+		frame.getLayeredPane().add(lblNewLabel);
+		
+		JLabel lblNewLabel2 = new JLabel("");
+		lblNewLabel2.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Wurm.jpg"));
+		lblNewLabel2.setBounds(1225, 0, 75, 64);
+		frame.getLayeredPane().add(lblNewLabel2, new Integer(1));
 		
 		lblLager = new JLabel("Nicht auf Lager!");
 		lblLager.setForeground(Color.RED);
 		lblLager.setBounds(57, 261, 149, 15);
 		lblLager.setVisible(false);
-		frame.getContentPane().add(lblLager);
+		frame.getLayeredPane().add(lblLager, new Integer(1));
 		
 		// Medium Hinzufuegen Fenster oeffnen
 		JButton btnHinzufuegen = new JButton("Hinzufügen");
@@ -105,7 +117,7 @@ public class GUIMedienVerwalten implements WindowListener{
 			}
 		});
 		btnHinzufuegen.setBounds(24, 30, 226, 35);
-		frame.getContentPane().add(btnHinzufuegen);
+		frame.getLayeredPane().add(btnHinzufuegen, new Integer(1));
 		
 		// Medium entfernen und Bestaetigung abfragen
 		JButton btnAusschliessen = new JButton("Ausschließen");
@@ -133,7 +145,7 @@ public class GUIMedienVerwalten implements WindowListener{
 			}
 		});
 		btnAusschliessen.setBounds(24, 87, 226, 35);
-		frame.getContentPane().add(btnAusschliessen);
+		frame.getLayeredPane().add(btnAusschliessen, new Integer(1));
 		
 		// Ausgewähltes Medium bearbeiten
 		JButton btnaendern = new JButton("Ändern");
@@ -155,11 +167,11 @@ public class GUIMedienVerwalten implements WindowListener{
 			}
 		});
 		btnaendern.setBounds(24, 144, 226, 35);
-		frame.getContentPane().add(btnaendern);
+		frame.getLayeredPane().add(btnaendern, new Integer(1));
 		
 		JScrollPane scrollPaneMedien = new JScrollPane();
 		scrollPaneMedien.setBounds(290, 87, 978, 245);
-		frame.getContentPane().add(scrollPaneMedien);
+		frame.getLayeredPane().add(scrollPaneMedien, new Integer(1));
 		
 
 		
@@ -180,6 +192,7 @@ public class GUIMedienVerwalten implements WindowListener{
 		public void actionPerformed(ActionEvent e) {
 			try {
 				String kategorie = comboBoxKategorie.getSelectedItem().toString();
+				lblNewLabel.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/" + kategorie + ".jpg"));
 				PreparedStatement anz = con.prepareStatement("select count(*) from " + kategorie);
 				ResultSet anzahl = anz.executeQuery();
 				anzahl.next();
@@ -282,7 +295,7 @@ public class GUIMedienVerwalten implements WindowListener{
 		comboBoxKategorie.addItem("Buecher");
 		comboBoxKategorie.addItem("Videospiele");
 		comboBoxKategorie.setBounds(290, 35, 200, 25);
-		frame.getContentPane().add(comboBoxKategorie);
+		frame.getLayeredPane().add(comboBoxKategorie, new Integer(1));
 		
 		// Fenster schliessen und zum Hauptfenster zurückkehren
 		JButton btnFertigStellen = new JButton("Fertig stellen");
@@ -292,7 +305,7 @@ public class GUIMedienVerwalten implements WindowListener{
 			}
 		});
 		btnFertigStellen.setBounds(24, 297, 226, 35);
-		frame.getContentPane().add(btnFertigStellen);
+		frame.getLayeredPane().add(btnFertigStellen, new Integer(1));
 		
 		// Feld, um in allen Spalten zu suchen
 		JTextField textFieldSuche = new JTextField();
@@ -327,17 +340,19 @@ public class GUIMedienVerwalten implements WindowListener{
 
         });
 		textFieldSuche.setBounds(678, 35, 200, 25);
-		frame.getContentPane().add(textFieldSuche);
+		frame.getLayeredPane().add(textFieldSuche, new Integer(1));
 		textFieldSuche.setColumns(10);
 		
-		JLabel lblSuche = new JLabel("Suche");
-		lblSuche.setBounds(607, 40, 53, 15);
-		frame.getContentPane().add(lblSuche);
+		JTextField lblSuche = new JTextField("Suche");
+		lblSuche.setEditable(false);
+		lblSuche.setForeground(Color.BLACK);
+		lblSuche.setBounds(607, 40, 45, 15);
+		frame.getLayeredPane().add(lblSuche, new Integer(1));
 		
 		textFieldError = new JTextField();
 		textFieldError.setEditable(false);
 		textFieldError.setBounds(913, 35, 100, 25);
-		frame.getContentPane().add(textFieldError);
+		frame.getLayeredPane().add(textFieldError);
 		textFieldError.setColumns(10);
 		
 		JButton buttonHistorie = new JButton("Historie anzeigen");
@@ -352,8 +367,6 @@ public class GUIMedienVerwalten implements WindowListener{
 					} catch (SQLException ex) {
 						ex.printStackTrace();
 					}
-					String nummer = table.getModel().getValueAt(zeile, 0).toString();
-					String kategorie = comboBoxKategorie.getSelectedItem().toString();
 					GUIHistorieMedium historie = new GUIHistorieMedium();
 					historie.getFrame().setVisible(true);
 					frame.dispose();
@@ -362,7 +375,7 @@ public class GUIMedienVerwalten implements WindowListener{
 			}
 		});
 		buttonHistorie.setBounds(24, 200, 226, 35);
-		frame.getContentPane().add(buttonHistorie);
+		frame.getLayeredPane().add(buttonHistorie, new Integer(1));
 		
 
 	}

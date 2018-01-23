@@ -13,10 +13,12 @@ import java.sql.SQLException;
 import java.util.regex.Matcher;
 
 import javax.swing.JFrame;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JTextField;
-
+import javax.swing.SwingConstants;
 import javax.swing.JLabel;
+import javax.swing.JLayeredPane;
 import javax.swing.JPasswordField;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
@@ -71,7 +73,14 @@ public class GUIKundenHinzufuegen implements WindowListener{
 		frame = new JFrame("Kunden Hinzufügen");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-800)/2, (screenSize.height-400)/2, 800, 400);
-		frame.getContentPane().setLayout(null);
+		frame.getLayeredPane().setLayout(null);
+		
+		JLabel lblNewLabel = new JLabel("");
+		lblNewLabel.setVerticalAlignment(SwingConstants.BOTTOM);
+		lblNewLabel.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/GluecklicherKunde.jpg"));
+		lblNewLabel.setBounds(0, 0, 1300, 400);
+		frame.setLayeredPane(new JLayeredPane());
+		frame.getLayeredPane().add(lblNewLabel);
 		
 		// Fertig stellen Button um Kunden anzulegen
 		JButton btnFertigstellen = new JButton("Fertig stellen");
@@ -90,7 +99,6 @@ public class GUIKundenHinzufuegen implements WindowListener{
 					}
 					if(daten != null) { // statement nur ausführen, wenn auch Daten vorhanden sind
 						statement += daten;
-						System.out.println(statement);
 						PreparedStatement pst = con.prepareStatement(statement);
 						pst.executeUpdate();
 						windowClosing(new WindowEvent(frame,WindowEvent.WINDOW_CLOSING));
@@ -102,92 +110,92 @@ public class GUIKundenHinzufuegen implements WindowListener{
 			}
 		});
 		btnFertigstellen.setBounds(300, 285, 226, 35);
-		frame.getContentPane().add(btnFertigstellen);
+		frame.getLayeredPane().add(btnFertigstellen, new Integer(1));
 		
 		textFieldVorname = new JTextField();
 		textFieldVorname.setBounds(136, 29, 200, 25);
-		frame.getContentPane().add(textFieldVorname);
+		frame.getLayeredPane().add(textFieldVorname, new Integer(1));
 		textFieldVorname.setColumns(10);
 		
 		JLabel lblName = new JLabel("Vorname");
 		lblName.setBounds(31, 31, 70, 15);
-		frame.getContentPane().add(lblName);
+		frame.getLayeredPane().add(lblName, new Integer(1));
 		
 		textFieldNachname = new JTextField();
 		textFieldNachname.setColumns(10);
 		textFieldNachname.setBounds(136, 76, 200, 25);
-		frame.getContentPane().add(textFieldNachname);
+		frame.getLayeredPane().add(textFieldNachname, new Integer(1));
 		
 		JLabel lblNachname = new JLabel("Nachname");
 		lblNachname.setBounds(31, 78, 81, 15);
-		frame.getContentPane().add(lblNachname);
+		frame.getLayeredPane().add(lblNachname, new Integer(1));
 		
 		textFieldEmail = new JTextField();
 		textFieldEmail.setBounds(136, 123, 200, 25);
-		frame.getContentPane().add(textFieldEmail);
+		frame.getLayeredPane().add(textFieldEmail, new Integer(1));
 		textFieldEmail.setColumns(10);
 		
 		JLabel lblEmail = new JLabel("E-Mail");
 		lblEmail.setBounds(31, 125, 81, 15);
-		frame.getContentPane().add(lblEmail);
+		frame.getLayeredPane().add(lblEmail, new Integer(1));
 		
 		textFieldAlter = new JTextField();
 		textFieldAlter.setColumns(10);
 		textFieldAlter.setBounds(136, 170, 200, 25);
-		frame.getContentPane().add(textFieldAlter);
+		frame.getLayeredPane().add(textFieldAlter, new Integer(1));
 		
 		JLabel lblAlter = new JLabel("Alter");
 		lblAlter.setBounds(31, 172, 81, 15);
-		frame.getContentPane().add(lblAlter);
+		frame.getLayeredPane().add(lblAlter, new Integer(1));
 		
 		JLabel lblPostleitzahl = new JLabel("Postleitzahl");
 		lblPostleitzahl.setBounds(405, 34, 91, 15);
-		frame.getContentPane().add(lblPostleitzahl);
+		frame.getLayeredPane().add(lblPostleitzahl, new Integer(1));
 		
 		textFieldPLZ = new JTextField();
 		textFieldPLZ.setColumns(10);
 		textFieldPLZ.setBounds(552, 29, 200, 25);
-		frame.getContentPane().add(textFieldPLZ);
+		frame.getLayeredPane().add(textFieldPLZ, new Integer(1));
 		
 		JLabel lblOrt = new JLabel("Ort");
 		lblOrt.setBounds(405, 81, 91, 15);
-		frame.getContentPane().add(lblOrt);
+		frame.getLayeredPane().add(lblOrt, new Integer(1));
 		
 		textFieldOrt = new JTextField();
 		textFieldOrt.setColumns(10);
 		textFieldOrt.setBounds(552, 76, 200, 25);
-		frame.getContentPane().add(textFieldOrt);
+		frame.getLayeredPane().add(textFieldOrt, new Integer(1));
 		
 		textFieldStrasse = new JTextField();
 		textFieldStrasse.setColumns(10);
 		textFieldStrasse.setBounds(552, 123, 200, 25);
-		frame.getContentPane().add(textFieldStrasse);
+		frame.getLayeredPane().add(textFieldStrasse, new Integer(1));
 		
 		JLabel lblStrae = new JLabel("Straße");
 		lblStrae.setBounds(405, 128, 91, 15);
-		frame.getContentPane().add(lblStrae);
+		frame.getLayeredPane().add(lblStrae, new Integer(1));
 		
 		JLabel lblHausnummer = new JLabel("Hausnummer");
 		lblHausnummer.setBounds(405, 175, 106, 15);
-		frame.getContentPane().add(lblHausnummer);
+		frame.getLayeredPane().add(lblHausnummer, new Integer(1));
 		
 		JLabel lblPasswort = new JLabel("Passwort");
 		lblPasswort.setBounds(31, 217, 81, 15);
-		frame.getContentPane().add(lblPasswort);
+		frame.getLayeredPane().add(lblPasswort, new Integer(1));
 		
 		passwordField = new JPasswordField();
 		passwordField.setBounds(136, 213, 200, 25);
-		frame.getContentPane().add(passwordField);
+		frame.getLayeredPane().add(passwordField, new Integer(1));
 		
 		textFieldHausnummer = new JTextField();
 		textFieldHausnummer.setColumns(10);
 		textFieldHausnummer.setBounds(552, 170, 200, 25);
-		frame.getContentPane().add(textFieldHausnummer);
+		frame.getLayeredPane().add(textFieldHausnummer, new Integer(1));
 		
 		lblPasswortUngueltig = new JLabel("Passwort ungueltig");
 		lblPasswortUngueltig.setForeground(Color.RED);
 		lblPasswortUngueltig.setBounds(161, 250, 139, 15);
-		frame.getContentPane().add(lblPasswortUngueltig);
+		frame.getLayeredPane().add(lblPasswortUngueltig, new Integer(1));
 		frame.addWindowListener(this);
 		lblPasswortUngueltig.setVisible(false);
 		
@@ -205,6 +213,12 @@ public class GUIKundenHinzufuegen implements WindowListener{
 				ex.printStackTrace();
 			}
 		}
+		
+		 for (Component c : frame.getLayeredPane().getComponents()) {
+		     if (c instanceof JLabel) { 
+		        	c.setForeground(Color.BLUE);
+		     }
+		 }
 	}
 	
 	public JFrame getFrame() {
@@ -256,7 +270,7 @@ public class GUIKundenHinzufuegen implements WindowListener{
 		public String getDataInsert(){
 			lblPasswortUngueltig.setVisible(false);
 			// Prüfen, ob alle Textfelder Inhalt besitzen
-			 for (Component c : frame.getContentPane().getComponents()) {
+			 for (Component c : frame.getLayeredPane().getComponents()) {
 			     if (c instanceof JTextField) { 
 			        if(((JTextField)c).getText().trim().isEmpty()) {
 			        	return null;
@@ -295,7 +309,7 @@ public class GUIKundenHinzufuegen implements WindowListener{
 		public String getDataUpdate() {
 			lblPasswortUngueltig.setVisible(false);
 			// Prüfen, ob alle Textfelder Inhalt besitzen
-			 for (Component c : frame.getContentPane().getComponents()) {
+			 for (Component c : frame.getLayeredPane().getComponents()) {
 			     if (c instanceof JTextField) { 
 			        if(((JTextField)c).getText().trim().isEmpty()) {
 			        	return null;

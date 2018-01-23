@@ -6,6 +6,7 @@ import java.awt.EventQueue;
 import java.awt.Toolkit;
 
 import javax.swing.JFrame;
+import javax.swing.ImageIcon;
 import javax.swing.JButton;
 
 import java.awt.event.ActionListener;
@@ -51,6 +52,7 @@ public class GUIRuecknahme implements WindowListener{
 	private JLabel lblGesamt;
 	private JTextField textFieldGesamt;
 	private int [] zeilen;
+	private JLabel lblNewLabel;
 	
 	/**
 	 * Launch the application.
@@ -104,11 +106,11 @@ public class GUIRuecknahme implements WindowListener{
 		        	g.getError().setText("Erfolg");
 			}
 		});
-		btnFertigStellen.setBounds(501, 315, 200, 25);
+		btnFertigStellen.setBounds(504, 320, 200, 25);
 		frame.getContentPane().add(btnFertigStellen);
 		
 		JScrollPane scrollPaneKunden = new JScrollPane();
-		scrollPaneKunden.setBounds(263, 56, 320, 226);
+		scrollPaneKunden.setBounds(262, 61, 320, 226);
 		frame.getContentPane().add(scrollPaneKunden);
 		try {
 			PreparedStatement anz = con.prepareStatement("select count(*) from Kunden");
@@ -192,7 +194,7 @@ public class GUIRuecknahme implements WindowListener{
 		frame.getContentPane().add(lblDauer);
 		
 		scrollPaneMedien = new JScrollPane();
-		scrollPaneMedien.setBounds(616, 56, 376, 226);
+		scrollPaneMedien.setBounds(614, 61, 376, 226);
 		frame.getContentPane().add(scrollPaneMedien);
 		
 		// Button, um ausgeliehene Medien eines Kunden anzuzeigen
@@ -405,6 +407,16 @@ public class GUIRuecknahme implements WindowListener{
 		textFieldGesamt.setColumns(10);
 		textFieldGesamt.setBounds(136, 321, 114, 19);
 		frame.getContentPane().add(textFieldGesamt);
+		
+		lblNewLabel = new JLabel("");
+		lblNewLabel.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Rueckgabe2.jpg"));
+		lblNewLabel.setBounds(991, 0, 301, 355);
+		frame.getContentPane().add(lblNewLabel);
+		
+		JLabel lblNewLabel2 = new JLabel("");
+		lblNewLabel2.setIcon(new ImageIcon("/home/pascal/Software Engineering/Projekt/Diagramme/Wurm.jpg"));
+		lblNewLabel2.setBounds(1225, 0, 75, 64);
+		frame.getLayeredPane().add(lblNewLabel2, new Integer(1));
 	}
 	
 	// Berechnet Strafpreis für aktuellen Kunden
