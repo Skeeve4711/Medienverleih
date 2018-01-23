@@ -84,7 +84,7 @@ public class GUIRuecknahme implements WindowListener{
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
 		frame.getContentPane().setLayout(null);
 		frame.addWindowListener(this);
-		this.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
+		GUIRuecknahme.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
 		
 		// Schließt das Fenster
 		JButton btnFertigStellen = new JButton("Schliessen");
@@ -231,12 +231,13 @@ public class GUIRuecknahme implements WindowListener{
 				  		      }
 					  		  medien = new JTable(data,spalten);
 					  		  scrollPaneMedien.setViewportView(medien);
-					  		  double strafpreis = berechneStrafpreis();
-					  		  textFieldStrafpreis.setText(String.valueOf(strafpreis));
-					  		  statement = "update Kunden set strafpreis=" + strafpreis;
-					  		  statement += " where kundennummer="+ kundennummer;
-					  		  pst = con.prepareStatement(statement);
-					  		  pst.executeUpdate();
+							  statement = "select strafpreis from Kunden where kundennummer=" + kundennummer;
+							  pst = con.prepareStatement(statement);
+							  rs = pst.executeQuery();
+							  rs.next();
+							  double strafpreis = rs.getDouble(1);
+							  textFieldStrafpreis.setText(String.valueOf(strafpreis));
+
 			  		      } else {
 			  		    	  scrollPaneMedien.setViewportView(null);
 			  		      }
@@ -480,7 +481,7 @@ public class GUIRuecknahme implements WindowListener{
 		frame.dispose();
 		try {
 			if(con != null) {
-				this.con.close();
+				GUIRuecknahme.con.close();
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();

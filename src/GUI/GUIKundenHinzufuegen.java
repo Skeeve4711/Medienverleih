@@ -16,8 +16,6 @@ import javax.swing.JFrame;
 import javax.swing.JButton;
 import javax.swing.JTextField;
 
-import Intern.Person;
-
 import javax.swing.JLabel;
 import javax.swing.JPasswordField;
 import java.awt.event.ActionListener;
@@ -250,7 +248,7 @@ public class GUIKundenHinzufuegen implements WindowListener{
 	@Override
 	public void windowClosing(WindowEvent e) {
 		frame.dispose();
-		GUIKundenVerwalten oberflaeche = new GUIKundenVerwalten();
+		GUIKundenVerwalten oberflaeche = new GUIKundenVerwalten(false);
 		oberflaeche.getFrame().setVisible(true);
 	}
 	

@@ -58,8 +58,8 @@ public class GUIBestaetigenKundenVerwalten implements WindowListener{
 		JButton btnJa = new JButton("Ja");
 		btnJa.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.dispose(); // TODO Rueckgabewert
-				GUIKundenVerwalten verwaltung = new GUIKundenVerwalten();
+				frame.dispose();
+				GUIKundenVerwalten verwaltung = new GUIKundenVerwalten(true);
 				verwaltung.getFrame().setVisible(true);
 			}
 		});
@@ -70,8 +70,8 @@ public class GUIBestaetigenKundenVerwalten implements WindowListener{
 		JButton btnNein = new JButton("Nein");
 		btnNein.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.dispose(); // TODO Rueckgabewert
-				GUIKundenVerwalten verwaltung = new GUIKundenVerwalten();
+				frame.dispose();
+				GUIKundenVerwalten verwaltung = new GUIKundenVerwalten(false);
 				verwaltung.getFrame().setVisible(true);
 			}
 		});
@@ -120,7 +120,7 @@ public class GUIBestaetigenKundenVerwalten implements WindowListener{
 	@Override
 	public void windowClosing(WindowEvent e) {
 		frame.dispose();
-		GUIKundenVerwalten oberflaeche = new GUIKundenVerwalten(); // TODO Rückgabewert
+		GUIKundenVerwalten oberflaeche = new GUIKundenVerwalten(false);
 		oberflaeche.getFrame().setVisible(true);
 	}
 

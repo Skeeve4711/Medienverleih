@@ -23,6 +23,7 @@ import javax.swing.event.DocumentListener;
 import javax.swing.table.TableColumn;
 import javax.swing.table.TableModel;
 import javax.swing.table.TableRowSorter;
+import java.awt.Color;
 
 public class GUIKundenVerwalten implements WindowListener{
 
@@ -30,6 +31,9 @@ public class GUIKundenVerwalten implements WindowListener{
 	private JTextField textFieldSuche;
 	private Connection con;
 	private JTable table;
+	private static String kundennummer;
+	private boolean entfernen;
+	private JLabel lblKunde ;
 	
 	/**
 	 * Launch the application.
@@ -38,7 +42,7 @@ public class GUIKundenVerwalten implements WindowListener{
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					GUIKundenVerwalten window = new GUIKundenVerwalten();
+					GUIKundenVerwalten window = new GUIKundenVerwalten(false);
 					window.frame.setVisible(true);
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -50,20 +54,64 @@ public class GUIKundenVerwalten implements WindowListener{
 	/**
 	 * Create the application.
 	 */
-	public GUIKundenVerwalten() {
+	public GUIKundenVerwalten(boolean entfernen) {
+		this.entfernen = entfernen;
 		initialize();
 	}
 
 	/**
 	 * Initialize the contents of the frame.
+	 * @throws SQLException 
 	 */
-	private void initialize() {
+	private void initialize(){
 		frame = new JFrame("Kunden verwalten");
 		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize(); //Bildschirmdimensionen in Pixeln holen
 	    frame.setBounds((screenSize.width-1300)/2, (screenSize.height-400)/2, 1300, 400);
 		frame.getContentPane().setLayout(null);
 		frame.addWindowListener(this);
 		con = SimpleQuery.connect(); // Verbindung zur Datenbank herstellen
+		
+		lblKunde = new JLabel("Kunde hat noch Sachen ausgeliehen!");
+		lblKunde.setVisible(false);
+		lblKunde.setForeground(Color.RED);
+		lblKunde.setBounds(12, 225, 275, 15);
+		frame.getContentPane().add(lblKunde);
+		
+		if(this.entfernen) {
+			try {
+				String sql = "select * from HistorieFilme where kundennummer=" + GUIKundenVerwalten.kundennummer;
+				sql += " and rueckgabedatum is null";
+				PreparedStatement pruef = con.prepareStatement(sql);
+				ResultSet rs = pruef.executeQuery();
+				boolean gefunden = false;
+				if(rs.next()) {
+					gefunden = true;
+				}
+				sql = "select * from HistorieFilme where kundennummer=" + GUIKundenVerwalten.kundennummer;
+				sql += " and rueckgabedatum is null";
+				pruef = con.prepareStatement(sql);
+				rs = pruef.executeQuery();
+				if(rs.next()) {
+					gefunden = true;
+				}
+				sql = "select * from HistorieFilme where kundennummer=" + GUIKundenVerwalten.kundennummer;
+				sql += " and rueckgabedatum is null";
+				pruef = con.prepareStatement(sql);
+				rs = pruef.executeQuery();
+				if(rs.next()) {
+					gefunden = true;
+				}
+				if(gefunden) {
+					lblKunde.setVisible(true);
+				} else {
+					String statement = "Delete from Kunden where kundennummer=" + GUIKundenVerwalten.kundennummer;
+					PreparedStatement pst = con.prepareStatement(statement);
+					pst.executeUpdate();
+				}
+			} catch (SQLException e1) {
+				e1.printStackTrace();
+			}
+		}
 		
 		// Kunden Hinzufuegen Fenster oeffnen
 		JButton btnHinzufuegen = new JButton("Hinzufügen");
@@ -84,16 +132,20 @@ public class GUIKundenVerwalten implements WindowListener{
 		
 		// Kunden entfernen und Bestaetigung abfragen
 		JButton btnEntfernen = new JButton("Entfernen");
-		btnEntfernen.addActionListener(new ActionListener() { // TODO Rückgabewert
+		btnEntfernen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				frame.dispose();
-				try {
-					if(con != null) con.close();
-				} catch (SQLException el) {
-					el.printStackTrace();
+				int zeile = table.getSelectedRow();
+				if(zeile != -1) {
+					GUIKundenVerwalten.kundennummer = table.getModel().getValueAt(zeile, 0).toString();
+					frame.dispose();
+					try {
+						if(con != null) con.close();
+					} catch (SQLException el) {
+						el.printStackTrace();
+					}
+					GUIBestaetigenKundenVerwalten  bestaetigung = new GUIBestaetigenKundenVerwalten(); 
+					bestaetigung.getFrame().setVisible(true);
 				}
-				GUIBestaetigenKundenVerwalten  bestaetigung = new GUIBestaetigenKundenVerwalten(); // TODO Rückgabewert auswerten
-				bestaetigung.getFrame().setVisible(true);
 			}
 		});
 		btnEntfernen.setBounds(24, 87, 226, 35);

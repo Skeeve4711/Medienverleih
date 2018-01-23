@@ -102,11 +102,43 @@ public class GUIMain implements WindowListener{
 		frame.addWindowListener(this);
 		this.con = SimpleQuery.connect(); // Verbindung zur Datenbank aufbauen
 		
+		//Strafpreise bei Start berechnen
+		try {
+			String statement;
+			String [] kategorie = {"Filme","Buecher","Videospiele"};
+			statement = "select kundennummer from Kunden";
+			PreparedStatement pst = con.prepareStatement(statement);
+			ResultSet rs;
+			rs = pst.executeQuery();
+			GUIRuecknahme.con = con;
+			while(rs.next()) {
+				  String kundennummer = rs.getString(1);
+				  for(int i= 0;i<kategorie.length;i++) {
+					  String tabellenname = "Historie" + kategorie[i];
+					  GUIRuecknahme.kategorie = kategorie[i];
+					  GUIRuecknahme.kundennummer = kundennummer;
+					  double strafpreis = GUIRuecknahme.berechneStrafpreis();
+					  statement = "update Kunden set strafpreis=strafpreis+" + strafpreis;
+					  statement += " where kundennummer="+ kundennummer;
+					  pst = con.prepareStatement(statement);
+					  pst.executeUpdate();
+					  statement = "update " + tabellenname + " set ausleihdatum=date_add(ausleihdatum,interval 1 week)";
+					  statement += " where kundennummer=" + kundennummer;
+					  statement += " and " + "DATEDIFF(UTC_DATE()," + tabellenname  + ".ausleihdatum)";
+					  statement += " > " + tabellenname + ".leihdauer*7 and rueckgabedatum is null";
+					  pst = con.prepareStatement(statement);
+					  pst.executeUpdate();
+				  }
+			}
+		} catch (SQLException e2) {
+			e2.printStackTrace();
+		}
+		
 		// Kunden verwalten Fenster öffnen
 		JButton btnKundenVerwalten = new JButton("Kunden verwalten");
 		btnKundenVerwalten.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				GUIKundenVerwalten verwaltung = new GUIKundenVerwalten();
+				GUIKundenVerwalten verwaltung = new GUIKundenVerwalten(false);
 				verwaltung.getFrame().setVisible(true);
 				try {
 					if(con!= null) con.close();
@@ -166,6 +198,31 @@ public class GUIMain implements WindowListener{
 		frame.getContentPane().add(btnRuecknahme);
 		
 		JButton btnVerkaufen = new JButton("Verkaufen");
+		btnVerkaufen.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				int[] zeilen = table.getSelectedRows();
+				lblError.setVisible(false);
+				if(zeilen.length > 0) {
+					String[] artikelnummern = new String[zeilen.length];
+					for(int i=0;i<zeilen.length;i++) {
+						if(!table.getModel().getValueAt(zeilen[i], 3).toString().equals("Auf Lager")) {
+							lblError.setVisible(true);
+							return;
+						}
+						artikelnummern[i] = table.getModel().getValueAt(zeilen[i], 0).toString();
+					}
+					String kategorie = comboBoxKategorie.getSelectedItem().toString();
+					GUIVerkaufen g = new GUIVerkaufen(artikelnummern, kategorie);
+					g.getFrame().setVisible(true);
+					try {
+						if(con!= null) con.close();
+					} catch (SQLException e1) {
+						e1.printStackTrace();
+					}
+					frame.dispose();
+				}
+			}
+		});
 		btnVerkaufen.setBounds(24, 320, 226, 35);
 		frame.getContentPane().add(btnVerkaufen);
 		
