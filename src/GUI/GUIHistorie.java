@@ -223,19 +223,20 @@ public class GUIHistorie implements WindowListener{
 				  		      int indexA = 0;
 				  		      while(rs.next()) {
 				  		    	  	for(int i=1;i<GUIMain.columnNamesHistorie.length;i++) {
-				  		    	  		if(i == 5) {
+				  		    	  		if(i == 6) {
 				  		    	  			String temp = rs.getString(i);
 				  		    	  			if( temp == null) {
 				  		    	  				data[indexA][GUIMain.columnNamesHistorie.length-1] = "Verliehen";
-				  		    	  				data[indexA][i-1] = rs.getString(i) + " Tage";
+				  		    	  				data[indexA][i-2] = rs.getString(i-1) + " Tage";
+				  		    	  				break;
 				  		    	  			} else if(Integer.parseInt(temp) > 100000){
 				  		    	  				data[indexA][GUIMain.columnNamesHistorie.length-1] = "Verkauft";
 				  		    	  				data[indexA][i-1] = "Unendlich";
 				  		    	  				i++;
 				  		    	  				data[indexA][i-1] = "Nie";
 				  		    	  			} else {
-				  		    	  			data[indexA][GUIMain.columnNamesHistorie.length-1] = "Zurückgegeben";
-			  		    	  				data[indexA][i-1] = rs.getString(i) + " Tage";
+					  		    	  			data[indexA][GUIMain.columnNamesHistorie.length-1] = "Zurückgegeben";
+				  		    	  				data[indexA][i-1] = rs.getString(i) + " Tage";
 				  		    	  			}
 				  		    	  		} else data[indexA][i-1] = rs.getString(i);
 				  		    	  		
@@ -301,7 +302,7 @@ public class GUIHistorie implements WindowListener{
 		frame.dispose();
 		try {
 			if(con != null) {
-				GUIRuecknahme.con.close();
+				GUIHistorie.con.close();
 			}
 		} catch (SQLException e1) {
 			e1.printStackTrace();

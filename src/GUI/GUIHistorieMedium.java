@@ -144,11 +144,11 @@ public class GUIHistorieMedium implements WindowListener{
 			      int indexA = 0;
 			      while(rs.next()) {
 			    	  	for(int i=1;i<GUIMain.columnNamesHistorieMedium.length;i++) {
-			    	  		if(i == 5) {
+			    	  		if(i == 6) {
 			    	  			String temp = rs.getString(i);
 			    	  			if( temp == null) {
 			    	  				data[indexA][GUIMain.columnNamesHistorieMedium.length-1] = "Verliehen";
-			    	  				data[indexA][i-1] = rs.getString(i) + " Tage";
+			    	  				data[indexA][i-2] = rs.getString(i-1) + " Tage";
 			    	  			} else if(Integer.parseInt(temp) > 100000){
 			    	  				data[indexA][GUIMain.columnNamesHistorieMedium.length-1] = "Verkauft";
 			    	  				data[indexA][i-1] = "Unendlich";

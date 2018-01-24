@@ -230,7 +230,6 @@ public class GUIMedienHinzufuegen implements WindowListener{
 					} else {
 						statement = "insert into " + kategorie + " values(";
 						daten = getDataInsert(kategorie);
-
 					}
 					if(daten != null) { // statement nur ausführen, wenn auch Daten vorhanden sind
 						statement += daten;
@@ -316,7 +315,6 @@ public class GUIMedienHinzufuegen implements WindowListener{
 				con.close();
 			}
 		} catch (SQLException e1) {
-			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 	}
@@ -324,6 +322,12 @@ public class GUIMedienHinzufuegen implements WindowListener{
 	// Setzt String aus allen Feldern für Einfuege-Statement zusammen
 	public String getDataInsert(String kategorie) {
 		// Prüfen, ob alle Textfelder Inhalt besitzen
+		if(kategorie.equals("Buecher")) {
+			textFieldRegisseur.setText("abx");
+			textFieldFilmstudio.setText("xyz");
+		} else if(kategorie.equals("Videospiele")) {
+			textFieldFilmstudio.setText("xyz");
+		}
 		 for (Component c : frame.getContentPane().getComponents()) {
 		     if (c instanceof JTextField) { 
 		        if(((JTextField)c).getText().trim().isEmpty()) {
